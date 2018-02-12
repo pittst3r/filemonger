@@ -4,7 +4,7 @@ import { tmpdir } from "os";
 import { mkdirpSync, outputFile } from "fs-extra";
 import { Observable } from "rxjs";
 import { transformFile } from "babel-core";
-import { Directory, AbsolutePath, RelativePath, FullPath } from "../src/types";
+import { Directory, AbsolutePath, RelativePath, FullPath } from "../types";
 import * as f from "../src/file";
 import {
   TMP_NAMESPACE,

@@ -12,7 +12,7 @@ import {
   FileStream,
   FullPath,
   RelativePath
-} from "./types";
+} from "../types";
 import * as f from "./file";
 import { mkdirp, copy } from "fs-extra";
 

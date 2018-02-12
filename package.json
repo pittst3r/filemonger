@@ -7,10 +7,11 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "pretest": "yarn build --outDir tmp",
+    "pretest": "yarn build -p tsconfig.test.json",
     "test": "mocha tmp/test/**/*-test.js",
     "posttest": "rm -rf tmp"
   },
+  "files": ["dist", "types.d.ts"],
   "dependencies": {
     "@types/fs-extra": "^5.0.0",
     "@types/glob": "^5.0.35",

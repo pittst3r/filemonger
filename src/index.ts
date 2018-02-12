@@ -7,7 +7,7 @@ import {
   Transform,
   Directory,
   AbsolutePath
-} from "./types";
+} from "../types";
 import * as f from "./file";
 
 export { f, helpers };
