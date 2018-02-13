@@ -13,7 +13,7 @@ import {
   createTmpDir
 } from "../src/helpers";
 import makeFilemonger from "../src/index";
-import { Subject } from "rxjs/Subject";
+import { Subject } from "rxjs";
 import { readFileSync } from "fs";
 
 export function makeFileReader(
