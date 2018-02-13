@@ -359,6 +359,17 @@ esutils@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.2.tgz#0abf4f1caa5bcb1f7a9d8acc6dea4faaa04bac9b"
 
+filemonger@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/filemonger/-/filemonger-0.1.0.tgz#8c36cf8152a4b4cbc984db3489d04adbe60068bc"
+  dependencies:
+    "@types/fs-extra" "^5.0.0"
+    "@types/glob" "^5.0.35"
+    "@types/node" "^9.4.1"
+    fs-extra "^5.0.0"
+    glob "^7.1.2"
+    rxjs "^5.5.6"
+
 fs-extra@^5.0.0:
   version "5.0.0"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-5.0.0.tgz#414d0110cdd06705734d055652c5411260c31abd"

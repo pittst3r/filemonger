@@ -7,7 +7,7 @@
     "noUnusedLocals": true,
     "declaration": true,
     "noEmitOnError": true,
-    "outDir": "dist"
-  },
-  "include": ["src/**/*"]
+    "outDir": "dist",
+    "skipLibCheck": true
+  }
 }
