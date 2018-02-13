@@ -2,17 +2,17 @@ import { resolve } from "path";
 import * as helpers from "./helpers";
 import {
   Filemonger,
+  Transform,
   FileStream,
   RelativePath,
-  Transform,
-  Directory,
-  AbsolutePath
+  AbsolutePath,
+  Directory
 } from "../types";
 import * as f from "./file";
 
 export { f, helpers };
 
-export default function makeFilemonger(transform: Transform): Filemonger {
+export function makeFilemonger(transform: Transform): Filemonger {
   return (patternOrFileStream, srcDir, destDir) => {
     const resolvedSrcDir = f.dir(f.abs(resolve(process.cwd(), srcDir)));
     const finalDestDir = f.dir(f.abs(resolve(process.cwd(), destDir)));

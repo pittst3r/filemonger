@@ -2,18 +2,17 @@ import * as ts from "typescript";
 import { resolve, join, relative } from "path";
 import { tmpdir } from "os";
 import { mkdirpSync, outputFile } from "fs-extra";
-import { Observable } from "rxjs";
+import { Observable, Subject } from "rxjs";
 import { transformFile } from "babel-core";
 import { Directory, AbsolutePath, RelativePath, FullPath } from "../types";
 import * as f from "../src/file";
 import {
   TMP_NAMESPACE,
   copyFile,
-  filesInDir,
-  createTmpDir
+  createTmpDir,
+  filesInDir
 } from "../src/helpers";
-import makeFilemonger from "../src/index";
-import { Subject } from "rxjs";
+import { makeFilemonger } from "../src/index";
 import { readFileSync } from "fs";
 
 export function makeFileReader(
@@ -79,12 +78,16 @@ export const typescriptmonger = makeFilemonger((file$, { srcDir, destDir }) =>
     .map(file => join(srcDir, file))
     .toArray()
     .do(files => {
-      const baseOptions = require("../../tsconfig.json").compilerOptions;
-      const compilerOptions = {
-        ...baseOptions,
-        rootDir: srcDir,
-        outDir: destDir
-      };
+      const tsConfig = require(join(process.cwd(), "tsconfig.json"));
+      const baseOptions = tsConfig.compilerOptions;
+      const compilerOptions = ts.convertCompilerOptionsFromJson(
+        {
+          ...baseOptions,
+          rootDir: srcDir,
+          outDir: destDir
+        },
+        process.cwd()
+      ).options;
       const program = ts.createProgram(files, compilerOptions);
       const diagnostics = ts.getPreEmitDiagnostics(program);
 

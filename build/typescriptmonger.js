@@ -1,5 +1,4 @@
-const makeFilemonger = require("filemonger").default;
-const helpers = require("filemonger").helpers;
+const { makeFilemonger, helpers } = require("filemonger");
 const ts = require("typescript");
 const path = require("path");
 
@@ -10,11 +9,14 @@ const typescriptmonger = makeFilemonger((file$, { srcDir, destDir }) =>
     .do(files => {
       const tsConfig = require(path.join(process.cwd(), "tsconfig.json"));
       const baseOptions = tsConfig.compilerOptions;
-      const compilerOptions = {
-        ...baseOptions,
-        rootDir: srcDir,
-        outDir: destDir
-      };
+      const compilerOptions = ts.convertCompilerOptionsFromJson(
+        {
+          ...baseOptions,
+          rootDir: srcDir,
+          outDir: destDir
+        },
+        process.cwd()
+      ).options;
       const program = ts.createProgram(files, compilerOptions);
       const diagnostics = ts.getPreEmitDiagnostics(program);
 
