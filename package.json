@@ -1,6 +1,6 @@
 {
   "name": "filemonger",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Process files with streams",
   "main": "dist/index.js",
   "author": "Robbie Pitts <me@robbie-pitts.com>",
@@ -12,7 +12,10 @@
     "posttest": "rm -rf tmp",
     "prepublishOnly": "yarn test && yarn build"
   },
-  "files": ["./dist", "./types.d.ts"],
+  "files": [
+    "./dist",
+    "./types.d.ts"
+  ],
   "dependencies": {
     "@types/fs-extra": "^5.0.0",
     "@types/glob": "^5.0.35",
