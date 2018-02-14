@@ -4,7 +4,6 @@ jsfiles=$(git diff --cached --name-only --diff-filter=ACM | grep '\.j\|tsx\?$' |
 [ -z "$jsfiles" ] && exit 0
 
 echo "$jsfiles" | xargs ./node_modules/.bin/prettier --write
-echo "$jsfiles" | xargs ./node_modules/.bin/tslint --project ./ --fix
 
 echo "$jsfiles" | xargs git add
 

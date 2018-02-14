@@ -9,12 +9,14 @@
   "private": true,
   "workspaces": ["packages/*"],
   "scripts": {
-    "lerna": "lerna"
+    "lerna": "lerna",
+    "pre-commit": "./bin/pre-commit"
   },
   "devDependencies": {
     "lerna": "^2.8.0",
+    "pre-commit": "^1.2.2",
     "prettier": "^1.10.2",
-    "tslint": "^5.9.1",
     "typescript": "~2.5.0"
-  }
+  },
+  "pre-commit": ["pre-commit"]
 }
