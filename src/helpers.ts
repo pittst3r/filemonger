@@ -1,5 +1,4 @@
-import { tmpdir } from "os";
-import { Observable } from "rxjs";
+import { Observable, Subject } from "rxjs";
 import { join } from "path";
 import * as glob from "glob";
 import { IOptions } from "glob";
@@ -15,14 +14,30 @@ import {
 } from "../types";
 import * as f from "./file";
 import { mkdirp, copy } from "fs-extra";
+import * as rimraf from "rimraf";
 
 export const TMP_NAMESPACE = "filemonger";
 
-export function createTmpDir(): DirectoryStream<AbsolutePath> {
+export function tmp(
+  fn: (tmpDir: Directory<AbsolutePath>) => FileStream<RelativePath>
+): FileStream<RelativePath> {
+  return createTmpDir().flatMap(tmpDir =>
+    fn(tmpDir).do({
+      complete() {
+        rimraf(tmpDir, err => {
+          if (err) throw err;
+        });
+      }
+    })
+  );
+}
+
+function createTmpDir(): DirectoryStream<AbsolutePath> {
   const path = f.dir(
     f.abs(
       join(
-        tmpdir(),
+        process.cwd(),
+        "tmp",
         TMP_NAMESPACE,
         Math.random()
           .toString(36)
@@ -42,6 +57,19 @@ export function createTmpDir(): DirectoryStream<AbsolutePath> {
       subscriber.complete();
     });
   });
+}
+
+export function multicast(
+  source$: FileStream<RelativePath>,
+  ...sinkFactories: Array<
+    (intermediate$: FileStream<RelativePath>) => FileStream<RelativePath>
+  >
+): FileStream<RelativePath> {
+  return source$.multicast(
+    () => new Subject(),
+    intermediate$ =>
+      Observable.merge(...sinkFactories.map(sF => sF(intermediate$)))
+  );
 }
 
 export function filesInDir(

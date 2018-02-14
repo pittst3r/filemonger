@@ -12,16 +12,15 @@
     "posttest": "rm -rf tmp",
     "prepublishOnly": "yarn test && yarn build"
   },
-  "files": [
-    "./dist",
-    "./types.d.ts"
-  ],
+  "files": ["./dist", "./types.d.ts"],
   "dependencies": {
     "@types/fs-extra": "^5.0.0",
     "@types/glob": "^5.0.35",
     "@types/node": "^9.4.1",
+    "@types/rimraf": "^2.0.2",
     "fs-extra": "^5.0.0",
     "glob": "^7.1.2",
+    "rimraf": "^2.6.2",
     "rxjs": "^5.5.6"
   },
   "devDependencies": {

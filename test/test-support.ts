@@ -2,15 +2,16 @@ import * as ts from "typescript";
 import { resolve, join, relative } from "path";
 import { tmpdir } from "os";
 import { mkdirpSync, outputFile } from "fs-extra";
-import { Observable, Subject } from "rxjs";
+import { Observable } from "rxjs";
 import { transformFile } from "babel-core";
 import { Directory, AbsolutePath, RelativePath, FullPath } from "../types";
 import * as f from "../src/file";
 import {
   TMP_NAMESPACE,
   copyFile,
-  createTmpDir,
-  filesInDir
+  filesInDir,
+  tmp,
+  multicast
 } from "../src/helpers";
 import { makeFilemonger } from "../src/index";
 import { readFileSync } from "fs";
@@ -126,22 +127,17 @@ function handleDiagnostics(diagnostics: ts.Diagnostic[]) {
 
 export const typescriptbabelmonger = makeFilemonger(
   (file$, { srcDir, destDir }) =>
-    createTmpDir().flatMap(tmpDir =>
-      typescriptmonger(file$, srcDir, tmpDir).multicast(
-        () => new Subject(),
-        compiledTS$ =>
-          Observable.merge(
-            passthroughmonger(
-              compiledTS$.filter(f => !!f.match(/d\.ts$/)),
-              tmpDir,
-              destDir
-            ),
-            babelmonger(
-              compiledTS$.filter(f => !!f.match(/\.js$/)),
-              tmpDir,
-              destDir
-            )
-          )
+    tmp(tmpDir =>
+      multicast(
+        typescriptmonger(file$, srcDir, tmpDir),
+        file$ =>
+          passthroughmonger(
+            file$.filter(f => !!f.match(/d\.ts$/)),
+            tmpDir,
+            destDir
+          ),
+        file$ =>
+          babelmonger(file$.filter(f => !!f.match(/\.js$/)), tmpDir, destDir)
       )
     )
 );
