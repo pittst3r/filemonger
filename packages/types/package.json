@@ -1,0 +1,12 @@
+{
+  "name": "@filemonger/types",
+  "version": "0.0.0",
+  "description": "Filemonger types",
+  "types": "index.d.ts",
+  "repository": "https://github.com/robbiepitts/filemonger",
+  "author": "Robbie Pitts <me@robbie-pitts.com>",
+  "license": "MIT",
+  "dependencies": {
+    "rxjs": "^5.5.6"
+  }
+}

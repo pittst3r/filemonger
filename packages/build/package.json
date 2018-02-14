@@ -1,20 +1,17 @@
 {
-  "name": "filemonger",
+  "name": "@filemonger/build",
   "version": "0.0.0",
-  "description": "Process files with streams",
+  "description": "Filemonger build",
   "main": "index.js",
   "repository": "https://github.com/robbiepitts/filemonger.git",
   "author": "Robbie Pitts <me@robbie-pitts.com>",
   "license": "MIT",
   "private": true,
-  "workspaces": ["packages/*"],
-  "scripts": {
-    "lerna": "lerna"
+  "scripts": {},
+  "dependencies": {
+    "@filemonger/main": "^0.1.1"
   },
   "devDependencies": {
-    "lerna": "^2.8.0",
-    "prettier": "^1.10.2",
-    "tslint": "^5.9.1",
     "typescript": "~2.5.0"
   }
 }

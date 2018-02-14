@@ -21,7 +21,7 @@ typescriptmonger("**/*.ts", "./src", "./dist").subscribe({
 ## Creating a filemonger
 
 ```ts
-import makeFilemonger, { f, helpers: { copyFile } } from "filemonger";
+import { makeFilemonger, f, helpers: { copyFile } } from "filemonger";
 
 export const passthroughmonger = makeFilemonger((file$, { srcDir, destDir }) =>
   file$.flatMap(file =>

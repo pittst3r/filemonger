@@ -1,4 +1,5 @@
-const { makeFilemonger, helpers } = require("filemonger");
+const { makeFilemonger, helpers } = require("@filemonger/main");
+const { filesInDir } = require("@filemonger/helpers");
 const ts = require("typescript");
 const path = require("path");
 
@@ -23,7 +24,7 @@ const typescriptmonger = makeFilemonger((file$, { srcDir, destDir }) =>
       handleDiagnostics(diagnostics);
       program.emit();
     })
-    .flatMapTo(helpers.filesInDir(destDir))
+    .flatMapTo(filesInDir(destDir))
 );
 
 function handleDiagnostics(diagnostics) {

@@ -1,0 +1,12 @@
+{
+  "name": "@filemonger/cli",
+  "version": "0.0.0",
+  "description": "Filemonger CLI",
+  "bin": {
+    "fm": "./index.js"
+  },
+  "private": true,
+  "repository": "https://github.com/robbiepitts/filemonger.git",
+  "author": "Robbie Pitts <me@robbie-pitts.com>",
+  "license": "MIT"
+}

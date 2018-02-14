@@ -1,18 +1,16 @@
 import * as ts from "typescript";
 import { resolve, join, relative } from "path";
-import { tmpdir } from "os";
 import { mkdirpSync, outputFile } from "fs-extra";
 import { Observable } from "rxjs";
 import { transformFile } from "babel-core";
-import { Directory, AbsolutePath, RelativePath, FullPath } from "../types";
-import * as f from "../src/file";
 import {
-  TMP_NAMESPACE,
-  copyFile,
-  filesInDir,
-  tmp,
-  multicast
-} from "../src/helpers";
+  Directory,
+  AbsolutePath,
+  RelativePath,
+  FullPath
+} from "@filemonger/types";
+import { f } from "@filemonger/helpers";
+import { copyFile, filesInDir, tmp, multicast } from "@filemonger/helpers";
 import { makeFilemonger } from "../src/index";
 import { readFileSync } from "fs";
 
@@ -37,7 +35,7 @@ export function createTmpDirSync(): Directory<AbsolutePath> {
   const rand = Math.random()
     .toString(36)
     .substring(7);
-  const path = f.dir(f.abs(join(tmpdir(), TMP_NAMESPACE, rand)));
+  const path = f.dir(f.abs(join(process.cwd(), "tmp", "filemonger", rand)));
 
   mkdirpSync(path);
 

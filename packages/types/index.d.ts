@@ -48,14 +48,6 @@ export type Pattern = string & {
   __patternBrand: any;
 };
 
-export type ResultStream = ConnectableObservable<FullPath<RelativePath>>;
-
 export type FileStream<P extends Path> = Observable<FullPath<P>>;
 
 export type DirectoryStream<P extends Path> = Observable<Directory<P>>;
-
-export type PathsStream = Observable<IPaths>;
-
-export type VoidStream = Observable<void>;
-
-export type WhateverStream = Observable<any>;

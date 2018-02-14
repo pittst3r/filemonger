@@ -7,7 +7,7 @@ import {
   FileName,
   Path,
   RelativePath
-} from "../types";
+} from "@filemonger/types";
 
 export function abs(str: string): AbsolutePath {
   return str as any;
