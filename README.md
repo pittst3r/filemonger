@@ -1,5 +1,20 @@
 # Filemonger
 
+## Installation
+
+To get the basics:
+
+```sh
+yarn add -D @filemonger/main
+```
+
+But you probably also want some helper functions if you're creating a
+filemonger:
+
+```sh
+yarn add -D @filemonger/helpers
+```
+
 ## Using a filemonger
 
 ```ts
