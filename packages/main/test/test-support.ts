@@ -1,17 +1,18 @@
 import * as ts from "typescript";
 import { resolve, join, relative } from "path";
-import { mkdirpSync, outputFile } from "fs-extra";
+import { mkdirpSync } from "fs-extra";
 import { Observable } from "rxjs";
 import { transformFile } from "babel-core";
 import {
   Directory,
   AbsolutePath,
   RelativePath,
-  FullPath
+  FullPath,
+  Filemonger
 } from "@filemonger/types";
 import { f } from "@filemonger/helpers";
-import { copyFile, filesInDir, tmp, multicast } from "@filemonger/helpers";
-import { makeFilemonger } from "../src/index";
+import { copyFile, filesInDir, writeFile } from "@filemonger/helpers";
+import makeFilemonger from "../src/index";
 import { readFileSync } from "fs";
 
 export function makeFileReader(
@@ -42,58 +43,56 @@ export function createTmpDirSync(): Directory<AbsolutePath> {
   return path;
 }
 
-export const passthroughmonger = makeFilemonger((file$, { srcDir, destDir }) =>
-  file$.flatMap(file =>
-    copyFile(
-      f.fullPath(f.abs(join(srcDir, file))),
-      f.fullPath(f.abs(join(destDir, file)))
-    ).map(file => f.fullPath(f.rel(relative(destDir, file))))
-  )
+export const passthroughmonger: Filemonger = makeFilemonger(
+  (file$, srcDir, destDir) =>
+    file$.delayWhen(file =>
+      copyFile(
+        f.fullPath(f.abs(join(srcDir, file))),
+        f.fullPath(f.abs(join(destDir, file)))
+      ).map(() => f.fullPath(f.rel(relative(destDir, file))))
+    )
 );
 
-export const babelmonger = makeFilemonger((file$, { srcDir, destDir }) => {
-  const observableBabelTransform = Observable.bindNodeCallback(transformFile);
+export const babelmonger: Filemonger = makeFilemonger(
+  (file$, srcDir, destDir, opts) => {
+    const observableBabelTransform = Observable.bindNodeCallback(transformFile);
 
-  return file$.flatMap(file =>
-    observableBabelTransform(resolve(srcDir, file), {}).flatMap(
-      ({ code }) =>
-        new Observable(subscriber => {
-          outputFile(resolve(destDir, file), code, err => {
-            if (err) {
-              subscriber.error(err);
-              return;
-            }
+    return file$.delayWhen(file =>
+      observableBabelTransform(
+        resolve(srcDir, file),
+        opts || require(join(process.cwd(), ".babelrc"))
+      )
+        .map(({ code }) => code!)
+        .flatMap(code =>
+          writeFile(f.fullPath(f.abs(resolve(destDir, file))), code)
+        )
+    );
+  }
+);
 
-            subscriber.next(file);
-            subscriber.complete();
-          });
-        })
-    )
-  );
-});
+export const typescriptmonger: Filemonger = makeFilemonger(
+  (file$, srcDir, destDir, opts) =>
+    file$
+      .map(file => join(srcDir, file))
+      .toArray()
+      .do(files => {
+        const tsConfig = opts || require(join(process.cwd(), "tsconfig.json"));
+        const baseOptions = tsConfig.compilerOptions;
+        const compilerOptions = ts.convertCompilerOptionsFromJson(
+          {
+            ...baseOptions,
+            rootDir: srcDir,
+            outDir: destDir
+          },
+          process.cwd()
+        ).options;
+        const program = ts.createProgram(files, compilerOptions);
+        const diagnostics = ts.getPreEmitDiagnostics(program);
 
-export const typescriptmonger = makeFilemonger((file$, { srcDir, destDir }) =>
-  file$
-    .map(file => join(srcDir, file))
-    .toArray()
-    .do(files => {
-      const tsConfig = require(join(process.cwd(), "tsconfig.json"));
-      const baseOptions = tsConfig.compilerOptions;
-      const compilerOptions = ts.convertCompilerOptionsFromJson(
-        {
-          ...baseOptions,
-          rootDir: srcDir,
-          outDir: destDir
-        },
-        process.cwd()
-      ).options;
-      const program = ts.createProgram(files, compilerOptions);
-      const diagnostics = ts.getPreEmitDiagnostics(program);
-
-      handleDiagnostics(diagnostics);
-      program.emit();
-    })
-    .flatMapTo(filesInDir(destDir))
+        handleDiagnostics(diagnostics);
+        program.emit();
+      })
+      .flatMapTo(filesInDir(destDir))
 );
 
 function handleDiagnostics(diagnostics: ts.Diagnostic[]) {
@@ -123,19 +122,12 @@ function handleDiagnostics(diagnostics: ts.Diagnostic[]) {
   }
 }
 
-export const typescriptbabelmonger = makeFilemonger(
-  (file$, { srcDir, destDir }) =>
-    tmp(tmpDir =>
-      multicast(
-        typescriptmonger(file$, srcDir, tmpDir),
-        file$ =>
-          passthroughmonger(
-            file$.filter(f => !!f.match(/d\.ts$/)),
-            tmpDir,
-            destDir
-          ),
-        file$ =>
-          babelmonger(file$.filter(f => !!f.match(/\.js$/)), tmpDir, destDir)
+export const typescriptbabelmonger: Filemonger = makeFilemonger(
+  (file$, srcDir, destDir, opts) =>
+    typescriptmonger(file$, opts)
+      .multicast(
+        file$ => passthroughmonger(file$.filter(f => !!f.match(/d\.ts$/))),
+        file$ => babelmonger(file$.filter(f => !!f.match(/\.js$/)))
       )
-    )
+      .return(srcDir, destDir)
 );

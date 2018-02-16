@@ -1,5 +1,9 @@
 # Filemonger
 
+A filemonger is a function which represents a transformation that may be applied
+to a stream of files. Calling a filemonger function gets you a filemonger
+instance, which you may compose with other instances.
+
 ## Installation
 
 To get the basics:
@@ -15,30 +19,44 @@ filemonger:
 yarn add -D @filemonger/helpers
 ```
 
-## Using a filemonger
+## Introduction by example
+
+### Using filemongers
 
 ```ts
-import typescriptmonger from "some-cool-package";
+import {
+  typescriptmonger,
+  filtermonger,
+  babelmonger,
+  closurecompilermonger
+} from "some-cool-package";
+import { compilerOptions } from "./tsconfig";
 
-typescriptmonger("**/*.ts", "./src", "./dist").subscribe({
-  next(file) {
-    console.log("Built file:", file);
-  },
-  complete() {
-    console.log("Donezo");
-  },
-  error(err) {
-    console.error(err);
-  }
+const matchesDts = f => !!f.match(/d\.ts$/);
+const matchesJs = f => !!f.match(/\.js$/);
+const opts = { compilerOptions };
+
+const compoundmonger = typescriptmonger("**/*.ts", opts).multicast(
+  file$ => filtermonger(file$.filter(matchesDts)),
+  file$ =>
+    babelmonger(file$.filter(matchesJs)).bind(file$ =>
+      closurecompilermonger(file$)
+    )
+);
+
+compoundmonger.process("./src", "./dist", files => {
+  console.log("Output files:");
+  files.forEach(console.log);
 });
 ```
 
-## Creating a filemonger
+### Creating a filemonger
 
 ```ts
-import { makeFilemonger, f, helpers: { copyFile } } from "filemonger";
+import makeFilemonger from "@filemonger/main";
+import { f, helpers: { copyFile } } from "@filemonger/helpers";
 
-export const passthroughmonger = makeFilemonger((file$, { srcDir, destDir }) =>
+export const filtermonger = makeFilemonger((file$, srcDir, destDir, opts) =>
   file$.flatMap(file =>
       copyFile(
         f.fullPath(f.abs(join(srcDir, file))),

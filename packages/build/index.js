@@ -7,13 +7,11 @@ module.exports = env => {
       : ["index.ts", "./src", "./dist"];
 
   console.log("Building...");
-  console.time("Build");
-  typescriptmonger(...args).subscribe({
-    complete() {
-      console.timeEnd("Build");
-    },
-    error(err) {
-      console.timeEnd("Build");
+  console.time("Build time");
+  typescriptmonger(args.shift()).process(...args, err => {
+    console.timeEnd("Build time");
+
+    if (err) {
       console.error(err);
       process.exit(1);
     }

@@ -13,24 +13,21 @@ describe("demos", () => {
     const pattern = "**/*.ts";
     const destDir = createTmpDirSync();
 
-    typescriptbabelmonger(pattern, srcDir, destDir)
-      .map(makeFileReader(destDir))
-      .toArray()
-      .subscribe(files => {
-        assert.sameDeepMembers(files, [
-          {
-            content:
-              '"use strict";\n\nObject.defineProperty(exports, "__esModule", { value: true });\nfunction foo() {\n    return "foo";\n}\nexports.default = foo;',
-            file: "typescript/foo.js"
-          },
-          {
-            content:
-              'import { Foo } from "./types";\nexport default function foo(): Foo;\n',
-            file: "typescript/foo.d.ts"
-          }
-        ]);
-        done();
-      });
+    typescriptbabelmonger(pattern).process(srcDir, destDir, (_, files) => {
+      assert.sameDeepMembers(files.map(makeFileReader(destDir)), [
+        {
+          content:
+            '"use strict";\n\nObject.defineProperty(exports, "__esModule", { value: true });\nfunction foo() {\n    return "foo";\n}\nexports.default = foo;',
+          file: "typescript/foo.js"
+        },
+        {
+          content:
+            'import { Foo } from "./types";\nexport default function foo(): Foo;\n',
+          file: "typescript/foo.d.ts"
+        }
+      ]);
+      done();
+    });
   });
 
   it("compiles typescript with tsc", done => {
@@ -38,23 +35,20 @@ describe("demos", () => {
     const pattern = "**/*.ts";
     const destDir = createTmpDirSync();
 
-    typescriptmonger(pattern, srcDir, destDir)
-      .map(makeFileReader(destDir))
-      .toArray()
-      .subscribe(files => {
-        assert.sameDeepMembers(files, [
-          {
-            content:
-              '"use strict";\nObject.defineProperty(exports, "__esModule", { value: true });\nfunction foo() {\n    return "foo";\n}\nexports.default = foo;\n',
-            file: "typescript/foo.js"
-          },
-          {
-            content:
-              'import { Foo } from "./types";\nexport default function foo(): Foo;\n',
-            file: "typescript/foo.d.ts"
-          }
-        ]);
-        done();
-      });
+    typescriptmonger(pattern).process(srcDir, destDir, (_, files) => {
+      assert.sameDeepMembers(files.map(makeFileReader(destDir)), [
+        {
+          content:
+            '"use strict";\nObject.defineProperty(exports, "__esModule", { value: true });\nfunction foo() {\n    return "foo";\n}\nexports.default = foo;\n',
+          file: "typescript/foo.js"
+        },
+        {
+          content:
+            'import { Foo } from "./types";\nexport default function foo(): Foo;\n',
+          file: "typescript/foo.d.ts"
+        }
+      ]);
+      done();
+    });
   });
 });
