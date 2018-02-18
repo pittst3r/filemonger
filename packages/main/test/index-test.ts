@@ -9,12 +9,12 @@ import {
 } from "./test-support";
 
 describe("filemonger", () => {
-  describe("#process()", () => {
+  describe("#run()", () => {
     it("runs the monger's transformation", done => {
       const srcDir = fixturesPath();
       const destDir = createTmpDirSync();
 
-      passthroughmonger("**/*.txt").process(srcDir, destDir, (err, files) => {
+      passthroughmonger("**/*.txt").run(srcDir, destDir, (err, files) => {
         if (err) throw err;
 
         assert.sameDeepMembers(files.map(makeFileReader(destDir)), [
@@ -35,7 +35,7 @@ describe("filemonger", () => {
       passthroughmonger("**/*.*")
         .bind(file$ => passthroughmonger(file$.filter(f => !!f.match("txt"))))
         .bind(file$ => passthroughmonger(file$.filter(f => !!f.match("bar"))))
-        .process(srcDir, destDir, (err, files) => {
+        .run(srcDir, destDir, (err, files) => {
           if (err) throw err;
 
           assert.sameDeepMembers(files.map(makeFileReader(destDir)), [
@@ -54,7 +54,7 @@ describe("filemonger", () => {
 
       passthroughmonger("**/*.ts")
         .merge(passthroughmonger("**/baz.txt"))
-        .process(srcDir, destDir, (err, files) => {
+        .run(srcDir, destDir, (err, files) => {
           if (err) throw err;
 
           assert.sameDeepMembers(files.map(makeFileReader(destDir)), [
@@ -92,7 +92,7 @@ describe("filemonger", () => {
           file$ => passthroughmonger(file$.filter(matchesDts)),
           file$ => babelmonger(file$.filter(matchesJs))
         )
-        .process(srcDir, destDir, (err, files) => {
+        .run(srcDir, destDir, (err, files) => {
           if (err) throw err;
 
           assert.sameDeepMembers(files.map(makeFileReader(destDir)), [

@@ -13,7 +13,7 @@ describe("demos", () => {
     const pattern = "**/*.ts";
     const destDir = createTmpDirSync();
 
-    typescriptbabelmonger(pattern).process(srcDir, destDir, (_, files) => {
+    typescriptbabelmonger(pattern).run(srcDir, destDir, (_, files) => {
       assert.sameDeepMembers(files.map(makeFileReader(destDir)), [
         {
           content:
@@ -35,7 +35,7 @@ describe("demos", () => {
     const pattern = "**/*.ts";
     const destDir = createTmpDirSync();
 
-    typescriptmonger(pattern).process(srcDir, destDir, (_, files) => {
+    typescriptmonger(pattern).run(srcDir, destDir, (_, files) => {
       assert.sameDeepMembers(files.map(makeFileReader(destDir)), [
         {
           content:

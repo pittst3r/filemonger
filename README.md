@@ -4,6 +4,9 @@ A filemonger is a function which represents a transformation that may be applied
 to a stream of files. Calling a filemonger function gets you a filemonger
 instance, which you may compose with other instances.
 
+Filemongers are executed lazily; you can compose a pipeline of filemonger
+transformations to be run at a later time.
+
 ## Installation
 
 To get the basics:

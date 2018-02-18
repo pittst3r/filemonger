@@ -12,7 +12,7 @@ import {
 } from "@filemonger/types";
 import { f } from "@filemonger/helpers";
 import { copyFile, filesInDir, writeFile } from "@filemonger/helpers";
-import makeFilemonger from "../src/index";
+import { makeFilemonger } from "../src/index";
 import { readFileSync } from "fs";
 
 export function makeFileReader(
@@ -76,7 +76,10 @@ export const typescriptmonger: Filemonger = makeFilemonger(
       .map(file => join(srcDir, file))
       .toArray()
       .do(files => {
-        const tsConfig = opts || require(join(process.cwd(), "tsconfig.json"));
+        const tsConfig = {
+          ...require(join(process.cwd(), "tsconfig.json")),
+          ...opts
+        };
         const baseOptions = tsConfig.compilerOptions;
         const compilerOptions = ts.convertCompilerOptionsFromJson(
           {
@@ -129,5 +132,5 @@ export const typescriptbabelmonger: Filemonger = makeFilemonger(
         file$ => passthroughmonger(file$.filter(f => !!f.match(/d\.ts$/))),
         file$ => babelmonger(file$.filter(f => !!f.match(/\.js$/)))
       )
-      .return(srcDir, destDir)
+      .unit(srcDir, destDir)
 );

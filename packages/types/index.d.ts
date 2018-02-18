@@ -1,25 +1,43 @@
 import { Observable } from "rxjs";
 import { ConnectableObservable } from "rxjs";
 
+type BindOperator = (
+  fn: (unit: FileStream<RelativePath>) => IFilemonger
+) => IFilemonger;
+
+type MergeOperator = (...others: IFilemonger[]) => IFilemonger;
+
+type MulticastOperator = (
+  ...sinkFactories: Array<(file$: FileStream<RelativePath>) => IFilemonger>
+) => IFilemonger;
+
+type Unit = (srcDir: string, destDir: string) => FileStream<RelativePath>;
+
+type Run = (
+  srcDir: string,
+  destDir: string,
+  complete: (
+    err: Error | undefined,
+    files: Array<FullPath<RelativePath>>
+  ) => void
+) => void;
+
+export interface ITransform {
+  transform(
+    file$: FileStream<RelativePath>,
+    srcDir: Directory<AbsolutePath>,
+    destDir: Directory<AbsolutePath>,
+    options?: IDict<any> | undefined
+  ): FileStream<RelativePath>;
+}
+
 export interface IFilemonger {
-  bind(fn: (unit: FileStream<RelativePath>) => IFilemonger): IFilemonger;
+  bind: BindOperator;
+  merge: MergeOperator;
+  multicast: MulticastOperator;
 
-  merge(other: IFilemonger): IFilemonger;
-
-  multicast(
-    ...sinkFactories: Array<(file$: FileStream<RelativePath>) => IFilemonger>
-  ): IFilemonger;
-
-  process(
-    srcDir: string,
-    destDir: string,
-    complete: (
-      err: Error | undefined,
-      files: Array<FullPath<RelativePath>>
-    ) => void
-  ): void;
-
-  return(srcDir: string, destDir: string): FileStream<RelativePath>;
+  run: Run;
+  unit: Unit;
 }
 
 export interface IDict<T> {
@@ -27,8 +45,8 @@ export interface IDict<T> {
 }
 
 export type Filemonger<Opts extends IDict<any> = IDict<any>> = (
-  patternOrFileStream: string | Observable<string>,
-  options?: Opts | undefined
+  patternOrFileStream?: string | Observable<string>,
+  options?: Opts
 ) => IFilemonger;
 
 export interface IPaths {

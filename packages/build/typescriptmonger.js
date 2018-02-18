@@ -1,4 +1,4 @@
-const makeFilemonger = require("@filemonger/main");
+const { makeFilemonger } = require("@filemonger/main");
 const { filesInDir } = require("@filemonger/helpers");
 const ts = require("typescript");
 const { join } = require("path");
@@ -8,7 +8,10 @@ const typescriptmonger = makeFilemonger((file$, srcDir, destDir, opts) =>
     .map(file => join(srcDir, file))
     .toArray()
     .do(files => {
-      const tsConfig = opts || require(join(process.cwd(), "tsconfig.json"));
+      const tsConfig = {
+        ...require(join(process.cwd(), "tsconfig.json")),
+        ...opts
+      };
       const baseOptions = tsConfig.compilerOptions;
       const compilerOptions = ts.convertCompilerOptionsFromJson(
         {

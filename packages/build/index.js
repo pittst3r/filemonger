@@ -8,7 +8,7 @@ module.exports = env => {
 
   console.log("Building...");
   console.time("Build time");
-  typescriptmonger(args.shift()).process(...args, err => {
+  typescriptmonger(args.shift()).run(...args, err => {
     console.timeEnd("Build time");
 
     if (err) {
