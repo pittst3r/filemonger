@@ -1,12 +1,14 @@
 {
   "name": "@filemonger/main",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Process files with streams",
   "main": "dist/index.js",
   "repository": "https://github.com/robbiepitts/filemonger.git",
   "author": "Robbie Pitts <me@robbie-pitts.com>",
   "license": "MIT",
-  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "fm",
     "pretest": "NODE_ENV=test fm",
@@ -16,11 +18,11 @@
   },
   "files": ["/dist"],
   "dependencies": {
-    "@filemonger/helpers": "^0.2.0",
-    "@filemonger/types": "^0.2.0"
+    "@filemonger/helpers": "^0.2.1",
+    "@filemonger/types": "^0.2.1"
   },
   "devDependencies": {
-    "@filemonger/build": "^0.2.0",
+    "@filemonger/build": "^0.2.1",
     "@filemonger/cli": "^0.2.0",
     "@types/chai": "^4.1.2",
     "@types/mocha": "^2.2.48",

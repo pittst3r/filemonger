@@ -1,12 +1,14 @@
 {
   "name": "@filemonger/types",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Filemonger types",
   "types": "index.d.ts",
   "repository": "https://github.com/robbiepitts/filemonger",
   "author": "Robbie Pitts <me@robbie-pitts.com>",
   "license": "MIT",
-  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "rxjs": "^5.5.6"
   }
