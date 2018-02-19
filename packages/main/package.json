@@ -1,6 +1,6 @@
 {
   "name": "@filemonger/main",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Process files with streams",
   "main": "dist/index.js",
   "repository": "https://github.com/robbiepitts/filemonger.git",
@@ -16,13 +16,15 @@
     "posttest": "rm -rf tmp",
     "prepublishOnly": "yarn test && yarn build"
   },
-  "files": ["/dist"],
+  "files": [
+    "/dist"
+  ],
   "dependencies": {
-    "@filemonger/helpers": "^0.2.1",
-    "@filemonger/types": "^0.2.1"
+    "@filemonger/helpers": "^0.2.2",
+    "@filemonger/types": "^0.2.2"
   },
   "devDependencies": {
-    "@filemonger/build": "^0.2.1",
+    "@filemonger/build": "^0.2.2",
     "@filemonger/cli": "^0.2.0",
     "@types/chai": "^4.1.2",
     "@types/mocha": "^2.2.48",
