@@ -7,14 +7,6 @@ to a stream of files. Being executed lazily, one can compose a pipeline of
 filemongers to be run at a later time, or to be further composed with other
 compound filemongers.
 
-To kick off a pipeline you need a source directory and a destination directory.
-The files streaming through the pipeline begin relative to the source
-directory. As the files move through the pipeline they live in tmp directories.
-A filemonger may or may not retain their relative file paths when placed in
-destination directories. A filemonger may change the relative path of a file, or
-concat files, or whatever, so the files in the destination directory may not
-come out 1:1 with the source directory.
-
 ### Using filemongers
 
 ```ts
@@ -116,7 +108,7 @@ firstmonger().bind(secondmonger);
 
 All the output files from `firstmonger` get piped into `secondmonger` when the
 pipeline is run. After `bind`ing we are left with a new filemonger instance that
-can be further composed if desired.
+can be further composed.
 
 #### `#merge()`
 
