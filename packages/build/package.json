@@ -1,6 +1,6 @@
 {
   "name": "@filemonger/build",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Filemonger build",
   "main": "index.js",
   "repository": "https://github.com/robbiepitts/filemonger.git",
@@ -9,7 +9,7 @@
   "private": true,
   "scripts": {},
   "dependencies": {
-    "@filemonger/main": "^0.2.0"
+    "@filemonger/main": "^0.2.1"
   },
   "devDependencies": {
     "typescript": "~2.5.0"
