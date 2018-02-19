@@ -27,7 +27,7 @@ const compoundmonger = typescriptmonger("**/*.ts", opts).multicast(
   file$ => babelmonger(file$.filter(matchesJs)).bind(closurecompilermonger)
 );
 
-compoundmonger.run("./src", "./dist", files => {
+compoundmonger.run("./src", "./dist", (err, files) => {
   console.log("Output files:");
   files.forEach(console.log);
 });
@@ -54,25 +54,29 @@ export const passthrumonger = makeFilemonger((file$, srcDir, destDir, opts) =>
 To get the basics:
 
 ```sh
-yarn add -D @filemonger/main
+yarn add [-D] @filemonger/main
 ```
 
 But you probably also want some helper functions if you're creating a
 filemonger:
 
 ```sh
-yarn add -D @filemonger/helpers
+yarn add [-D] @filemonger/helpers
 ```
 
 ## API
 
 ### Making a filemonger
 
+Read files from `srcDir`, transform them, and place the new files in the
+`destDir`, returning a stream of the new file paths which may or may not have
+changed. `file$` is an Rxjs stream of file paths relative to the `srcDir`.
+`opts` is the option object passed in through the filemonger invocation as the
+second argument. If no options were passed then `opts` will be an empty object.
+
 ```ts
 const mrcoolicemonger = makeFilemonger((file$, srcDir, destDir, opts) => {
-  // Copy files from srcDir, do stuff to them using a temp dir if necessary, and
-  // place in destDir, returning a stream of the new file paths which may or
-  // may not have changed.
+  // Do stuff
 });
 ```
 
@@ -139,7 +143,7 @@ There are two ways to run a filemonger pipeline, the `#run()` and `#unit()`
 methods. `#run()` does not expose the file stream and allows for a callback to
 be provided which is called upon completion. This is the recommended API for
 general filemonger usage. `#unit()` is a lower-level API to be used in the
-creation of filemongers and returns an unsubscribed stream of files.
+creation of filemongers and returns an unsubscribed Rxjs stream of files.
 
 #### `#run()`
 
@@ -163,7 +167,7 @@ const loggingmonger = makeFilemonger((file$, srcDir, destDir, opts) => {
 
   return opts
     .monger(file$, opts)
-    .do(console.log)
-    .unit(srcDir, destDir);
+    .unit(srcDir, destDir)
+    .do(console.log);
 });
 ```
