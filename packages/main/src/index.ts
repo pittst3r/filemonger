@@ -50,9 +50,9 @@ export function makeFilemonger<Opts extends IDict<any>>(
     const merge: MergeOperator = (...others) => {
       const mergingmonger = makeFilemonger((_, srcDir, destDir) => {
         const thisFile$ = unit(srcDir, destDir);
-        const otherFile$ = others.map(o => o.unit(srcDir, destDir));
+        const otherFile$s = others.map(o => o.unit(srcDir, destDir));
 
-        return Observable.merge(thisFile$, ...otherFile$);
+        return Observable.merge(thisFile$, ...otherFile$s);
       });
 
       return mergingmonger();
