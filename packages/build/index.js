@@ -1,4 +1,4 @@
-const typescriptmonger = require("./typescriptmonger");
+const { typescriptmonger } = require("@filemonger/typescriptmonger");
 
 module.exports = env => {
   const args =

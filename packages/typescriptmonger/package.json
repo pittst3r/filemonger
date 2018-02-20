@@ -1,7 +1,7 @@
 {
-  "name": "@filemonger/main",
+  "name": "@filemonger/typescriptmonger",
   "version": "0.2.2",
-  "description": "Process files with streams",
+  "description": "A filemonger for typescript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "repository": "https://github.com/robbiepitts/filemonger.git",
@@ -10,28 +10,28 @@
   "publishConfig": {
     "access": "public"
   },
+  "keywords": ["filemonger"],
   "scripts": {
     "build": "fm",
     "pretest": "NODE_ENV=test fm",
     "test": "mocha tmp/test/**/*-test.js",
     "posttest": "rm -rf tmp",
-    "prepublishOnly": "yarn test && yarn build"
+    "prepublishOnly": "yarn build"
   },
   "files": ["/dist"],
   "dependencies": {
-    "@filemonger/helpers": "^0.2.2",
-    "@filemonger/types": "^0.2.2"
+    "@filemonger/types": "^0.2.2",
+    "@types/node": "^9.4.1"
   },
   "devDependencies": {
     "@filemonger/build": "^0.2.2",
     "@filemonger/cli": "^0.2.0",
-    "@filemonger/typescriptmonger": "^0.2.2",
     "@types/chai": "^4.1.2",
     "@types/mocha": "^2.2.48",
+    "@types/rimraf": "^2.0.2",
     "chai": "^4.1.2",
     "mocha": "^5.0.0",
-    "pre-commit": "^1.2.2",
-    "prettier": "^1.10.2",
-    "tslint": "^5.9.1"
+    "rimraf": "^2.6.2",
+    "typescript": "~2.5.0"
   }
 }

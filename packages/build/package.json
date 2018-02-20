@@ -9,9 +9,7 @@
   "private": true,
   "scripts": {},
   "dependencies": {
-    "@filemonger/main": "^0.2.2"
-  },
-  "devDependencies": {
-    "typescript": "~2.5.0"
+    "@filemonger/main": "^0.2.2",
+    "@filemonger/typescriptmonger": "^0.2.2"
   }
 }

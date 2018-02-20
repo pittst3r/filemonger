@@ -1,10 +1,10 @@
 import { assert } from "chai";
+import { typescriptmonger } from "@filemonger/typescriptmonger";
 import {
   fixturesPath,
   createTmpDirSync,
   passthroughmonger,
   makeFileReader,
-  typescriptmonger,
   babelmonger
 } from "./test-support";
 

@@ -22,15 +22,6 @@ type Run = (
   ) => void
 ) => void;
 
-export interface ITransform {
-  transform(
-    file$: FileStream<RelativePath>,
-    srcDir: Directory<AbsolutePath>,
-    destDir: Directory<AbsolutePath>,
-    options?: IDict<any> | undefined
-  ): FileStream<RelativePath>;
-}
-
 export interface IFilemonger {
   bind: BindOperator;
   merge: MergeOperator;
@@ -58,7 +49,7 @@ export type Transform<Opts extends IDict<any>> = (
   file$: FileStream<RelativePath>,
   srcDir: Directory<AbsolutePath>,
   destDir: Directory<AbsolutePath>,
-  options?: Opts | undefined
+  options: Opts
 ) => FileStream<RelativePath>;
 
 export type Extension = string & {
