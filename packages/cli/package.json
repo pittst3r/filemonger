@@ -1,6 +1,6 @@
 {
   "name": "@filemonger/cli",
-  "version": "0.2.0",
+  "version": "0.2.3",
   "description": "Filemonger CLI",
   "bin": {
     "fm": "./index.js"

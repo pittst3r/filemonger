@@ -1,6 +1,6 @@
 {
   "name": "@filemonger/types",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Filemonger types",
   "types": "index.d.ts",
   "repository": "https://github.com/robbiepitts/filemonger",
