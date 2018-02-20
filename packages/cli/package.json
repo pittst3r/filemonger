@@ -5,8 +5,13 @@
   "bin": {
     "fm": "./index.js"
   },
-  "private": true,
   "repository": "https://github.com/robbiepitts/filemonger.git",
   "author": "Robbie Pitts <me@robbie-pitts.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "yargs": "^11.0.0"
+  }
 }

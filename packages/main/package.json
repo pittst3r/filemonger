@@ -11,8 +11,8 @@
     "access": "public"
   },
   "scripts": {
-    "build": "fm",
-    "pretest": "NODE_ENV=test fm",
+    "build": "fm -s src -d dist",
+    "pretest": "NODE_ENV=test fm -s ./ -d tmp",
     "test": "mocha tmp/test/**/*-test.js",
     "posttest": "rm -rf tmp",
     "prepublishOnly": "yarn test && yarn build"
