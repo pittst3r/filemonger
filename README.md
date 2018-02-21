@@ -202,7 +202,7 @@ const appmonger = makeFilemonger((primaryEntrypoint$, srcDir, destDir) =>
   entryhtmlmonger(primaryEntrypoint$)
     .multicast(
       secondary$ =>
-        switchnmonger(secondary$, {
+        switchmonger(secondary$, {
           map: [[isTs, tsmonger], [isJs, passthrumonger]]
         }).bind(rollupmonger),
       secondary$ => passthrumonger(secondary$.filter(isHtml)),
