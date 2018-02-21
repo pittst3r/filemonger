@@ -1,11 +1,24 @@
 # Filemonger
 
+* [Introduction](#introduction)
+* [Installation](#installation)
+* [API](#api)
+* [CLI](#cli)
+
 ## Introduction
 
-A filemonger is a function which represents a transformation that may be applied
-to a stream of files. Being executed lazily, one can compose a pipeline of
-filemongers to be run at a later time, or to be further composed with other
-compound filemongers.
+Filemonger seeks to make it easy to create a file processing pipeline by
+providing interfaces for composing single-purpose filemongers into compound
+filemongers. A filemonger is a function which represents a transformation that
+may be applied to a stream of files. Effectual code is encapsulated in
+filemongers, hidden away from functional pipeline code.
+
+One composes a pipeline of filemonger instances into a compound filemonger
+instance, which may be further composed into another compound instance.
+Filemonger instances are executed lazily, so once you've composed your pipeline
+you can kick it off with a source directory and a destination directory, or
+export it for later usage, or wrap your instance in a new filemonger and share
+it with others.
 
 ### Using filemongers
 
@@ -171,3 +184,69 @@ const loggingmonger = makeFilemonger((file$, srcDir, destDir, opts) => {
     .do(console.log);
 });
 ```
+
+### Authoring and sharing compound filemongers
+
+If you've made a filemonger pipeline you want to share with others, you want
+to wrap it in a new filemonger. This combines all of the previously mentioned
+APIs, and potentially some Rxjs APIs, as with the following example.
+
+You can see with this example that this moderately complex pipeline is concisely
+expressed. Some of the functions and filemongers in this example are hand-waved
+for brevity.
+
+First make a package that exports a filemonger:
+
+```ts
+const appmonger = makeFilemonger((primaryEntrypoint$, srcDir, destDir) =>
+  entryhtmlmonger(primaryEntrypoint$)
+    .multicast(
+      secondary$ =>
+        switchnmonger(secondary$, {
+          map: [[isTs, tsmonger], [isJs, passthrumonger]]
+        }).bind(rollupmonger),
+      secondary$ => passthrumonger(secondary$.filter(isHtml)),
+      secondary$ => sassmonger(secondary$.filter(isScss))
+    )
+    .multicast(
+      file$ => movemonger(file$, { from: "/static/html", to: "/" }),
+      file$ => movemonger(file$, { from: "/src", to: "/assets" }),
+      file$ => movemonger(file$, { from: "/styles", to: "/assets" })
+    )
+    .bind(file$ =>
+      linkrewritemonger(file$.filter(isHtml), {
+        map: [["/src", "/assets"], ["/styles", "/assets"]]
+      })
+    )
+    .bind(fingerprintmonger)
+    .unit(srcDir, destDir)
+);
+
+export { appmonger };
+```
+
+Which could then be consumed in a `mongerfile.js`:
+
+```ts
+const { appmonger } = require("some-cool-package");
+const { movemonger } = require("some-other-cool-package");
+
+module.exports = appmonger("/static/html/index.html").merge(
+  movemonger("/static/img/**/*", { from: "/static/img", to: "/img" })
+);
+```
+
+And then with the CLI:
+
+```sh
+fm -s app -d dist
+```
+
+## CLI
+
+Filemonger comes with a barebones CLI to simplify usage:
+
+1. Run `yarn add -D @filemonger/cli`
+2. Add a `mongerfile.js` to the root of your project
+3. Export a filemonger instance from your `mongerfile.js` (see example above)
+4. Run `fm -s path/to/source/dir -d path/to/dest/dir`
