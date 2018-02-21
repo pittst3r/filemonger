@@ -10,7 +10,7 @@ import {
   Filemonger
 } from "@filemonger/types";
 import { f } from "@filemonger/helpers";
-import { copyFile, writeFile } from "@filemonger/helpers";
+import { symlinkFile, writeFile } from "@filemonger/helpers";
 import { makeFilemonger } from "../src/index";
 import { readFileSync } from "fs";
 
@@ -45,7 +45,7 @@ export function createTmpDirSync(): Directory<AbsolutePath> {
 export const passthroughmonger: Filemonger = makeFilemonger(
   (file$, srcDir, destDir) =>
     file$.delayWhen(file =>
-      copyFile(
+      symlinkFile(
         f.fullPath(f.abs(join(srcDir, file))),
         f.fullPath(f.abs(join(destDir, file)))
       ).map(() => f.fullPath(f.rel(relative(destDir, file))))
