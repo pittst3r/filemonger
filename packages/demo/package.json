@@ -1,6 +1,6 @@
 {
   "name": "@filemonger/demo",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "A filemonger demo",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,7 +17,7 @@
   "devDependencies": {
     "@filemonger/cli": "^0.2.3",
     "@filemonger/types": "^0.3.0",
-    "@filemonger/typescriptmonger": "^0.4.0",
+    "@filemonger/typescriptmonger": "^0.4.1",
     "@types/chai": "^4.1.2",
     "@types/mocha": "^2.2.48",
     "@types/node": "^9.4.1",
