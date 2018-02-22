@@ -12,7 +12,7 @@ import f = require("./file");
 
 export default function filesInDir(
   dir: Directory<Path>,
-  pattern: Pattern = f.pat("**/*")
+  pattern: Pattern = f.pat("**/*.*")
 ): FileStream<RelativePath> {
   const obsGlob = Observable.bindNodeCallback<string, IOptions, string[]>(glob);
 
