@@ -38,13 +38,13 @@ import {
   closurecompilermonger
 } from "some-cool-package";
 
-const matchesDts = f => !!f.match(/d\.ts$/);
-const matchesJs = f => !!f.match(/\.js$/);
-const opts = { compilerOptions };
+// Compile TS w/ declaration files; process the JS with Babel while allowing the
+// `.d.ts` files to bypass.
 
-const compoundmonger = typescriptmonger("index.ts").multicast(
-  file$ => passthrumonger(file$.filter(matchesDts)),
-  file$ => babelmonger(file$.filter(matchesJs)).bind(closurecompilermonger)
+const matchesJs = f => !!f.match(/\.js$/);
+const compoundmonger = typescriptmonger("index.ts").bypass(
+  matchesJs,
+  babelmonger
 );
 
 compoundmonger.run("./src", "./dist", (err, files) => {
@@ -83,9 +83,9 @@ changed. `file$` is an Rxjs stream of file paths relative to the `srcDir`.
 second argument. If no options were passed then `opts` will be an empty object.
 
 ```ts
-const passthrumonger = makeFilemonger((file$, srcDir, destDir) =>
-  file$.delayWhen(file => symlinkFile(join(srcDir, file), join(destDir, file)))
-);
+const foomonger = makeFilemonger((file$, srcDir, destDir, opts) => {
+  // Do stuff
+});
 ```
 
 ### Invoking a filemonger
@@ -101,12 +101,6 @@ passthrumonger("img/**/*");
 ```
 
 ### Composing filemongers
-
-```ts
-icyhotstunnazmonger("img/**/*.jpg")
-  .merge(mrcoolicemonger("img/**/*.jpg"))
-  .bind(imgcompressmonger);
-```
 
 #### `#bind()`
 
