@@ -38,7 +38,7 @@ const sassmonger = makeFilemonger((entrypoint$, srcDir, destDir) => {
 });
 
 const htmlentrypointmonger = makeFilemonger((entrypoint$, srcDir, destDir) =>
-  entrypoint$.filter(isHtml).flatMap(entrypoint => {
+  entrypoint$.flatMap(entrypoint => {
     const html = readFileSync(join(srcDir, entrypoint)).toString();
     const $ = cheerio.load(html);
     const scripts = $("script")
@@ -70,7 +70,7 @@ const movemonger = makeFilemonger((file$, srcDir, destDir, { path }) => {
 
 const pathrewritemonger = makeFilemonger(
   (file$, srcDir, destDir, { pattern, replacer }) =>
-    file$.filter(file => !!file.match(/\.html$/)).delayWhen(entrypoint => {
+    file$.delayWhen(entrypoint => {
       const html = readFileSync(join(srcDir, entrypoint)).toString();
       const $ = cheerio.load(html);
       const scripts = $("script").each((_, el) => {
