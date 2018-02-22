@@ -4,3 +4,5 @@ tmp
 dist
 lerna-debug.log
 yarn-error.log
+
+!packages/demo/dist
