@@ -160,7 +160,7 @@ firstmonger().multicast(secondmonger, thirdmonger);
 
 Sends the file stream through a predicate; if true the file passes into
 the given filemonger, if false bypasses the filemonger and merges in with the
-files that exited the filemonger. Syntactic sugar and a fancy multicast.
+files that exited the filemonger. Syntactic sugar on a fancy multicast.
 
 ```ts
 const isGif = f => f.match(/\.gif$/);
