@@ -192,31 +192,30 @@ to wrap it in a new filemonger. This combines all of the previously mentioned
 APIs, and potentially some Rxjs APIs, as with the following example.
 
 You can see with this example that this moderately complex pipeline is concisely
-expressed. Some of the functions and filemongers in this example are hand-waved
-for brevity.
+expressed (and could be expressed other ways). Some of the functions and
+filemongers in this example are hand-waved for brevity. To see a complete
+example see the demo package.
 
 First make a package that exports a filemonger:
 
 ```ts
-const appmonger = makeFilemonger((primaryEntrypoint$, srcDir, destDir) =>
-  entryhtmlmonger(primaryEntrypoint$)
+const appmonger = makeFilemonger((entrypoint$, srcDir, destDir) =>
+  htmlentrypointmonger(entrypoint$)
     .multicast(
-      secondary$ =>
-        switchmonger(secondary$, {
-          map: [[isTs, tsmonger], [isJs, passthrumonger]]
-        }).bind(rollupmonger),
-      secondary$ => passthrumonger(secondary$.filter(isHtml)),
-      secondary$ => sassmonger(secondary$.filter(isScss))
+      f$ => movemonger(f$.filter(inHtmlDir), { path: "../.." }),
+      f$ => movemonger(f$.filter(inSrcDir), { path: "../assets" }),
+      f$ => movemonger(f$.filter(inStylesDir), { path: "../assets" })
     )
-    .multicast(
-      file$ => movemonger(file$, { from: "/static/html", to: "/" }),
-      file$ => movemonger(file$, { from: "/src", to: "/assets" }),
-      file$ => movemonger(file$, { from: "/styles", to: "/assets" })
-    )
-    .bind(file$ =>
-      linkrewritemonger(file$.filter(isHtml), {
-        map: [["/src", "/assets"], ["/styles", "/assets"]]
-      })
+    .bypass(isHtml, f$ =>
+      pathrewritemonger(f$, {
+        pattern: /^\/(src|styles)/,
+        replacer: "assets"
+      }).bind(f$ =>
+        pathrewritemonger(f$, {
+          pattern: /\.scss$/,
+          replacer: ".css"
+        })
+      )
     )
     .bind(fingerprintmonger)
     .unit(srcDir, destDir)
@@ -231,8 +230,8 @@ Which could then be consumed in a `mongerfile.js`:
 const { appmonger } = require("some-cool-package");
 const { movemonger } = require("some-other-cool-package");
 
-module.exports = appmonger("/static/html/index.html").merge(
-  movemonger("/static/img/**/*", { from: "/static/img", to: "/img" })
+module.exports = appmonger("/static/html/*").merge(
+  movemonger("/static/img/**/*", { path: "../../img" })
 );
 ```
 
