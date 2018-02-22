@@ -56,12 +56,13 @@ compoundmonger.run("./src", "./dist", (err, files) => {
 ### Creating a filemonger
 
 ```ts
-import { makeFilemonger } from "@filemonger/main";
-import { symlinkFile } from "@filemonger/helpers";
+import { makeFilemonger, helpers } from "@filemonger/main";
 import { join } from "path";
 
 const passthrumonger = makeFilemonger((file$, srcDir, destDir) =>
-  file$.delayWhen(file => symlinkFile(join(srcDir, file), join(destDir, file)))
+  file$.delayWhen(file =>
+    helpers.symlinkFile(join(srcDir, file), join(destDir, file))
+  )
 );
 ```
 
