@@ -1,6 +1,5 @@
-import { makeFilemonger } from "@filemonger/main";
+import { makeFilemonger, helpers } from "@filemonger/main";
 import { Filemonger } from "@filemonger/types";
-import { filesInDir } from "@filemonger/helpers";
 import { join } from "path";
 import {
   createProgram,
@@ -32,7 +31,7 @@ const typescriptmonger: Filemonger = makeFilemonger(
         handleDiagnostics(diagnostics);
         program.emit();
       })
-      .flatMapTo(filesInDir(destDir))
+      .flatMapTo(helpers.filesInDir(destDir))
 );
 
 export { typescriptmonger };

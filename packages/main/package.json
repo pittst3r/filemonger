@@ -17,11 +17,12 @@
     "posttest": "rm -rf tmp",
     "prepublishOnly": "yarn test && yarn build"
   },
-  "files": [
-    "/dist"
-  ],
+  "files": ["/dist"],
   "dependencies": {
-    "@filemonger/types": "^0.3.0"
+    "@filemonger/types": "^0.3.0",
+    "@types/fs-extra": "^5.0.0",
+    "fs-extra": "^5.0.0",
+    "rxjs": "^5.5.6"
   },
   "devDependencies": {
     "@filemonger/cli": "^0.2.3",

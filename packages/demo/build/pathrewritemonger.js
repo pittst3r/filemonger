@@ -1,7 +1,6 @@
-const { makeFilemonger } = require("@filemonger/main");
+const { makeFilemonger, helpers } = require("@filemonger/main");
 const cheerio = require("cheerio");
 const { readFileSync } = require("fs");
-const { writeFile } = require("@filemonger/helpers");
 const { join } = require("path");
 
 module.exports = makeFilemonger(
@@ -16,6 +15,6 @@ module.exports = makeFilemonger(
         el.attribs["href"] = el.attribs["href"].replace(pattern, replacer);
       });
 
-      return writeFile(join(destDir, entrypoint), $.html());
+      return helpers.writeFile(join(destDir, entrypoint), $.html());
     })
 );

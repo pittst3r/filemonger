@@ -1,5 +1,4 @@
-const { makeFilemonger } = require("@filemonger/main");
-const { writeFile } = require("@filemonger/helpers");
+const { makeFilemonger, helpers } = require("@filemonger/main");
 const { join, parse, relative } = require("path");
 const { Observable } = require("rxjs");
 const sass = Observable.bindNodeCallback(require("node-sass").render);
@@ -10,7 +9,7 @@ module.exports = makeFilemonger((entrypoint$, srcDir, destDir) => {
       const parts = parse(entrypoint);
       const file = join(destDir, parts.dir, parts.name) + ".css";
 
-      return writeFile(file, result.css).mapTo(relative(destDir, file));
+      return helpers.writeFile(file, result.css).mapTo(relative(destDir, file));
     })
   );
 });

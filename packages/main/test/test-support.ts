@@ -9,10 +9,10 @@ import {
   FullPath,
   Filemonger
 } from "@filemonger/types";
-import { f } from "@filemonger/helpers";
-import { symlinkFile, writeFile } from "@filemonger/helpers";
-import { makeFilemonger } from "../src/index";
+import { makeFilemonger, helpers } from "../src";
 import { readFileSync } from "fs";
+
+const { f, symlinkFile, writeFile } = helpers;
 
 export function makeFileReader(
   dir: Directory<AbsolutePath>

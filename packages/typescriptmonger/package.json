@@ -10,9 +10,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "keywords": [
-    "filemonger"
-  ],
+  "keywords": ["filemonger"],
   "scripts": {
     "build": "tsc -p tsconfig.prod.json",
     "pretest": "tsc",
@@ -20,9 +18,7 @@
     "posttest": "rm -rf tmp",
     "prepublishOnly": "yarn build"
   },
-  "files": [
-    "/dist"
-  ],
+  "files": ["/dist"],
   "dependencies": {
     "@filemonger/main": "^0.4.0",
     "@filemonger/types": "^0.3.0",
@@ -30,7 +26,6 @@
   },
   "devDependencies": {
     "@filemonger/cli": "^0.2.3",
-    "@filemonger/helpers": "^0.3.1",
     "@types/chai": "^4.1.2",
     "@types/mocha": "^2.2.48",
     "@types/rimraf": "^2.0.2",

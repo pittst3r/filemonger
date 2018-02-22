@@ -1,5 +1,4 @@
-const { makeFilemonger } = require("@filemonger/main");
-const { symlinkFile } = require("@filemonger/helpers");
+const { makeFilemonger, helpers } = require("@filemonger/main");
 const { join, relative, parse } = require("path");
 
 module.exports = makeFilemonger((file$, srcDir, destDir, { path }) => {
@@ -8,6 +7,6 @@ module.exports = makeFilemonger((file$, srcDir, destDir, { path }) => {
     const parts = parse(file);
     const target = join(destDir, parts.dir, path, parts.base);
 
-    return symlinkFile(src, target).mapTo(relative(destDir, target));
+    return helpers.symlinkFile(src, target).mapTo(relative(destDir, target));
   });
 });
