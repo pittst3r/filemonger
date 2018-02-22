@@ -2,7 +2,6 @@
 
 * [Introduction](#introduction)
 * [Installation](#installation)
-* [Demo](#demo)
 * [API](#api)
 * [CLI](#cli)
 
@@ -21,6 +20,14 @@ you can kick it off with a source directory and a destination directory, or
 export it for later usage, or wrap your instance in a new filemonger and share
 it with others.
 
+### Demo
+
+To see a Parcel-like (yet very stripped down), end-to-end working example, see
+[@filemonger/demo](packages/demo). Start by looking at the package.json build
+script, which runs the `mongerfile.js`. This kicks off a build pipeline using
+filemongers in the `build` directory of the demo. Source files are in the `app`
+directory and output files are in the `dist` directory.
+
 ### Using filemongers
 
 ```ts
@@ -30,13 +37,12 @@ import {
   babelmonger,
   closurecompilermonger
 } from "some-cool-package";
-import { compilerOptions } from "./tsconfig";
 
 const matchesDts = f => !!f.match(/d\.ts$/);
 const matchesJs = f => !!f.match(/\.js$/);
 const opts = { compilerOptions };
 
-const compoundmonger = typescriptmonger("**/*.ts", opts).multicast(
+const compoundmonger = typescriptmonger("index.ts").multicast(
   file$ => passthrumonger(file$.filter(matchesDts)),
   file$ => babelmonger(file$.filter(matchesJs)).bind(closurecompilermonger)
 );
@@ -50,16 +56,12 @@ compoundmonger.run("./src", "./dist", (err, files) => {
 ### Creating a filemonger
 
 ```ts
-import makeFilemonger from "@filemonger/main";
-import { f, copyFile } from "@filemonger/helpers";
+import { makeFilemonger } from "@filemonger/main";
+import { symlinkFile } from "@filemonger/helpers";
+import { join } from "path";
 
-export const passthrumonger = makeFilemonger((file$, srcDir, destDir, opts) =>
-  file$.flatMap(file =>
-    copyFile(
-      f.fullPath(f.abs(join(srcDir, file))),
-      f.fullPath(f.abs(join(destDir, file)))
-    ).map(file => f.fullPath(f.rel(relative(destDir, file))))
-  )
+const passthrumonger = makeFilemonger((file$, srcDir, destDir) =>
+  file$.delayWhen(file => symlinkFile(join(srcDir, file), join(destDir, file)))
 );
 ```
 
@@ -78,11 +80,6 @@ filemonger:
 yarn add [-D] @filemonger/helpers
 ```
 
-## Demo
-
-To see a Parcel-like (yet very stripped down), end-to-end working example, see
-[@filemonger/demo](packages/demo).
-
 ## API
 
 ### Making a filemonger
@@ -94,9 +91,9 @@ changed. `file$` is an Rxjs stream of file paths relative to the `srcDir`.
 second argument. If no options were passed then `opts` will be an empty object.
 
 ```ts
-const mrcoolicemonger = makeFilemonger((file$, srcDir, destDir, opts) => {
-  // Do stuff
-});
+const passthrumonger = makeFilemonger((file$, srcDir, destDir) =>
+  file$.delayWhen(file => symlinkFile(join(srcDir, file), join(destDir, file)))
+);
 ```
 
 ### Invoking a filemonger
@@ -108,7 +105,7 @@ some options. Specifying a source directory and destination directory happens
 later.
 
 ```ts
-mrcoolicemonger("img/**/*.jpg");
+passthrumonger("img/**/*");
 ```
 
 ### Composing filemongers
