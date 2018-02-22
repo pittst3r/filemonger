@@ -2,6 +2,7 @@
 
 * [Introduction](#introduction)
 * [Installation](#installation)
+* [Demo](#demo)
 * [API](#api)
 * [CLI](#cli)
 
@@ -67,7 +68,7 @@ export const passthrumonger = makeFilemonger((file$, srcDir, destDir, opts) =>
 To get the basics:
 
 ```sh
-yarn add [-D] @filemonger/main
+yarn add [-D] @filemonger/main [@filemonger/types]
 ```
 
 But you probably also want some helper functions if you're creating a
@@ -76,6 +77,11 @@ filemonger:
 ```sh
 yarn add [-D] @filemonger/helpers
 ```
+
+## Demo
+
+To see a Parcel-like (yet very stripped down), end-to-end working example, see
+[@filemonger/demo](packages/demo).
 
 ## API
 
