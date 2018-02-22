@@ -11,11 +11,8 @@
   "scripts": {
     "build": "fm -s app -d dist"
   },
-  "files": [
-    "/dist"
-  ],
+  "files": ["/dist"],
   "devDependencies": {
-    "@filemonger/build": "^0.3.1",
     "@filemonger/cli": "^0.2.3",
     "@filemonger/types": "^0.3.0",
     "@filemonger/typescriptmonger": "^0.3.1",

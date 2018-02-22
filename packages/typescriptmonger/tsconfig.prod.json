@@ -8,7 +8,7 @@
     "noUnusedLocals": true,
     "declaration": true,
     "noEmitOnError": true,
-    "outDir": "tmp"
+    "outDir": "dist"
   },
-  "include": ["src/**/*", "test/**/*"]
+  "include": ["src/**/*"]
 }

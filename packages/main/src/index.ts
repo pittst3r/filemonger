@@ -12,18 +12,24 @@ import {
   FullPath,
   RelativePath
 } from "@filemonger/types";
-import { f, tmp, symlinkFile } from "@filemonger/helpers";
-import find from "./find";
+import * as helpers from "./helpers";
 import { Subject, Observable } from "rxjs";
+
+export { helpers };
 
 export function makeFilemonger<Opts extends IDict<any>>(
   transform: Transform<Opts>
 ): Filemonger<Opts> {
+  const { f, tmp, symlinkFile, filesInDir } = helpers;
+
   return (patternOrFileStream = "**/*", opts = {} as Opts) => {
     const unit: Unit = (srcDir: string, destDir: string) => {
       const resolvedSrcDir = f.dir(f.abs(resolve(process.cwd(), srcDir)));
       const finalDestDir = f.dir(f.abs(resolve(process.cwd(), destDir)));
-      const file$ = find(patternOrFileStream, resolvedSrcDir);
+      const file$ =
+        typeof patternOrFileStream === "string"
+          ? filesInDir(resolvedSrcDir, f.pat(patternOrFileStream))
+          : (patternOrFileStream as any);
 
       return Observable.defer(() =>
         transform(file$, resolvedSrcDir, finalDestDir, opts)
