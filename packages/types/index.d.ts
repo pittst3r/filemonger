@@ -5,6 +5,11 @@ type BindOperator = (
   fn: (unit: FileStream<RelativePath>) => IFilemonger
 ) => IFilemonger;
 
+type BypassOperator = (
+  predicate: (path: FullPath<RelativePath>) => boolean,
+  fn: (unit: FileStream<RelativePath>) => IFilemonger
+) => IFilemonger;
+
 type MergeOperator = (...others: IFilemonger[]) => IFilemonger;
 
 type MulticastOperator = (
@@ -24,6 +29,7 @@ type Run = (
 
 export interface IFilemonger {
   bind: BindOperator;
+  bypass: BypassOperator;
   merge: MergeOperator;
   multicast: MulticastOperator;
 

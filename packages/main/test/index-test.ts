@@ -112,4 +112,35 @@ describe("filemonger", () => {
         });
     });
   });
+
+  describe("#bypass()", () => {
+    it("streams transform results into into given monger if predicate true, bypasses the monger if false", done => {
+      const srcDir = fixturesPath();
+      const destDir = createTmpDirSync();
+
+      type StrMatches = (f: string) => boolean;
+      const matchesJs: StrMatches = f => !!f.match(/\.js$/);
+
+      typescriptmonger("**/*.ts")
+        .bypass(matchesJs, babelmonger)
+        .run(srcDir, destDir, (err, files) => {
+          if (err) throw err;
+
+          assert.sameDeepMembers(files.map(makeFileReader(destDir)), [
+            {
+              content:
+                'import { Foo } from "./types";\nexport default function foo(): Foo;\n',
+              file: "typescript/foo.d.ts"
+            },
+            {
+              content:
+                '"use strict";\n\nObject.defineProperty(exports, "__esModule", { value: true });\nfunction foo() {\n    return "foo";\n}\nexports.default = foo;',
+              file: "typescript/foo.js"
+            }
+          ]);
+
+          done();
+        });
+    });
+  });
 });
