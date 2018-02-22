@@ -1,6 +1,6 @@
 {
   "name": "@filemonger/main",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Process files with streams",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,13 +21,13 @@
     "/dist"
   ],
   "dependencies": {
-    "@filemonger/helpers": "^0.3.0",
+    "@filemonger/helpers": "^0.3.1",
     "@filemonger/types": "^0.3.0"
   },
   "devDependencies": {
-    "@filemonger/build": "^0.3.0",
+    "@filemonger/build": "^0.3.1",
     "@filemonger/cli": "^0.2.3",
-    "@filemonger/typescriptmonger": "^0.3.0",
+    "@filemonger/typescriptmonger": "^0.3.1",
     "@types/chai": "^4.1.2",
     "@types/mocha": "^2.2.48",
     "chai": "^4.1.2",
