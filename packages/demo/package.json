@@ -1,0 +1,34 @@
+{
+  "name": "@filemonger/demo",
+  "version": "0.2.3",
+  "description": "A filemonger demo",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "repository": "https://github.com/robbiepitts/filemonger.git",
+  "author": "Robbie Pitts <me@robbie-pitts.com>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "fm -s app -d dist"
+  },
+  "files": ["/dist"],
+  "dependencies": {},
+  "devDependencies": {
+    "@filemonger/build": "^0.2.3",
+    "@filemonger/cli": "^0.2.3",
+    "@filemonger/types": "^0.2.3",
+    "@filemonger/typescriptmonger": "^0.2.3",
+    "@types/chai": "^4.1.2",
+    "@types/mocha": "^2.2.48",
+    "@types/node": "^9.4.1",
+    "@types/rimraf": "^2.0.2",
+    "chai": "^4.1.2",
+    "cheerio": "^1.0.0-rc.2",
+    "fs-extra": "^5.0.0",
+    "mocha": "^5.0.0",
+    "node-sass": "^4.7.2",
+    "rimraf": "^2.6.2",
+    "rollup": "^0.56.2",
+    "typescript": "~2.5.0"
+  }
+}
