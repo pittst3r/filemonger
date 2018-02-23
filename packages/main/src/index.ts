@@ -9,31 +9,29 @@ import {
   Transform,
   Unit,
   BypassOperator,
-  FullPath,
+  FileStream,
   RelativePath
 } from "@filemonger/types";
 import * as helpers from "./helpers";
 import { Subject, Observable } from "rxjs";
+
+const { f, tmp, symlinkFile, filesInDir } = helpers;
 
 export { helpers };
 
 export function makeFilemonger<Opts extends IDict<any>>(
   transform: Transform<Opts>
 ): Filemonger<Opts> {
-  const { f, tmp, symlinkFile, filesInDir } = helpers;
-
-  return (patternOrFileStream = "**/*", opts = {} as Opts) => {
+  return (patternOrFileStream = "**/*.*", opts = {} as Opts) => {
     const unit: Unit = (srcDir: string, destDir: string) => {
       const resolvedSrcDir = f.dir(f.abs(resolve(process.cwd(), srcDir)));
       const finalDestDir = f.dir(f.abs(resolve(process.cwd(), destDir)));
       const file$ =
         typeof patternOrFileStream === "string"
           ? filesInDir(resolvedSrcDir, f.pat(patternOrFileStream))
-          : (patternOrFileStream as any);
+          : (patternOrFileStream as FileStream<RelativePath>);
 
-      return Observable.defer(() =>
-        transform(file$, resolvedSrcDir, finalDestDir, opts)
-      );
+      return transform(file$, resolvedSrcDir, finalDestDir, opts);
     };
 
     const run: Run = (srcDir, destDir, complete) => {
@@ -50,29 +48,18 @@ export function makeFilemonger<Opts extends IDict<any>>(
         });
     };
 
-    const bind: BindOperator = fn => {
+    const bind: BindOperator = mongerFactory => {
       const bindingmonger = makeFilemonger((_, srcDir, destDir) =>
-        tmp(tmpDir => fn(unit(srcDir, tmpDir)).unit(tmpDir, destDir))
+        tmp(tmpDir => mongerFactory(unit(srcDir, tmpDir)).unit(tmpDir, destDir))
       );
 
       return bindingmonger();
     };
 
     const bypass: BypassOperator = (predicate, fn) => {
-      const inversePredicate: (x: FullPath<RelativePath>) => boolean = x =>
-        !predicate(x);
-      const passthrumonger = makeFilemonger((file$, srcDir, destDir) =>
-        file$.delayWhen(file =>
-          symlinkFile(
-            f.fullPath(f.abs(join(srcDir, file))),
-            f.fullPath(f.abs(join(destDir, file)))
-          )
-        )
-      );
-
       return multicast(
         f$ => fn(f$.filter(predicate)),
-        f$ => passthrumonger(f$.filter(inversePredicate))
+        f$ => passthrumonger(f$.filter(f => !predicate(f)))
       );
     };
 
@@ -111,3 +98,12 @@ export function makeFilemonger<Opts extends IDict<any>>(
     };
   };
 }
+
+export const passthrumonger = makeFilemonger((file$, srcDir, destDir) =>
+  file$.delayWhen(file =>
+    symlinkFile(
+      f.fullPath(f.abs(join(srcDir, file))),
+      f.fullPath(f.abs(join(destDir, file)))
+    )
+  )
+);

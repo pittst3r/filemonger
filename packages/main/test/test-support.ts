@@ -1,4 +1,4 @@
-import { resolve, join, relative } from "path";
+import { resolve, join } from "path";
 import { mkdirpSync } from "fs-extra";
 import { Observable } from "rxjs";
 import { transformFile } from "babel-core";
@@ -12,7 +12,7 @@ import {
 import { makeFilemonger, helpers } from "../src";
 import { readFileSync } from "fs";
 
-const { f, symlinkFile, writeFile } = helpers;
+const { f, writeFile } = helpers;
 
 export function makeFileReader(
   dir: Directory<AbsolutePath>
@@ -41,16 +41,6 @@ export function createTmpDirSync(): Directory<AbsolutePath> {
 
   return path;
 }
-
-export const passthroughmonger: Filemonger = makeFilemonger(
-  (file$, srcDir, destDir) =>
-    file$.delayWhen(file =>
-      symlinkFile(
-        f.fullPath(f.abs(join(srcDir, file))),
-        f.fullPath(f.abs(join(destDir, file)))
-      ).map(() => f.fullPath(f.rel(relative(destDir, file))))
-    )
-);
 
 export const babelmonger: Filemonger = makeFilemonger(
   (file$, srcDir, destDir, opts) => {
