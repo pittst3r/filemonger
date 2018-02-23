@@ -3,12 +3,14 @@ const { Observable } = require("rxjs");
 const { rollup } = require("rollup");
 const { join } = require("path");
 
-module.exports = makeFilemonger((entrypoint$, srcDir, destDir) => {
-  return entrypoint$.delayWhen(entrypoint => {
-    return Observable.fromPromise(
-      rollup({ input: join(srcDir, entrypoint) }).then(b =>
-        b.write({ file: join(destDir, entrypoint), format: "iife" })
-      )
+module.exports = makeFilemonger((file$, srcDir, destDir, { entry }) => {
+  return file$
+    .toArray()
+    .flatMap(() =>
+      Observable.fromPromise(
+        rollup({ input: join(srcDir, entry) }).then(b =>
+          b.write({ file: join(destDir, entry), format: "iife" })
+        )
+      ).mapTo(entry)
     );
-  });
 });
