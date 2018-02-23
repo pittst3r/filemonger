@@ -90,7 +90,7 @@ describe("filemonger", () => {
     });
 
     describe("#bind()", () => {
-      it.only("streams the result into the given function which returns a new filemonger instance", done => {
+      it("streams the result into the given function which returns a new filemonger instance", done => {
         const srcDir = fixturesPath();
 
         passthrumonger("**/*.*")
