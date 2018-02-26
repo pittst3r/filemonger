@@ -7,3 +7,4 @@
     .getElementById("app")
     .appendChild(document.createTextNode(statement));
 })();
+//# sourceMappingURL=index.js.map

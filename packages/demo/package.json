@@ -9,11 +9,9 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build": "fm -s app -d dist"
+    "build": "fm -d dist"
   },
-  "files": [
-    "/dist"
-  ],
+  "files": ["/dist"],
   "devDependencies": {
     "@filemonger/cli": "^0.2.3",
     "@filemonger/main": "^0.4.2",

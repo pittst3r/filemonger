@@ -1,28 +1,23 @@
-const { makeFilemonger, passthrumonger } = require("@filemonger/main");
-const { inHtmlDir, inSrcDir, inStylesDir, isHtml } = require("./helpers");
+const { makeFilemonger, filtermonger } = require("@filemonger/main");
+const { inAppDir, inStylesDir, isHtml } = require("./helpers");
 const htmlentrypointmonger = require("./htmlentrypointmonger");
 const pathrewritemonger = require("./pathrewritemonger");
 const movemonger = require("./movemonger");
 
-const appmonger = makeFilemonger((file$, srcDir, destDir, { entry }) =>
-  htmlentrypointmonger(file$, { entry })
+const appmonger = makeFilemonger((srcDir$, destDir, { entry }) =>
+  htmlentrypointmonger(srcDir$, { entry })
     .multicast(
-      f$ => movemonger(f$.filter(inHtmlDir), { path: "../.." }),
-      f$ => movemonger(f$.filter(inSrcDir), { path: "../assets" }),
-      f$ => movemonger(f$.filter(inStylesDir), { path: "../assets" })
+      srcDir$ => filtermonger(srcDir$, { pattern: "**/*.js" }),
+      srcDir$ => filtermonger(srcDir$, { pattern: "**/*.css" }),
+      srcDir$ =>
+        filtermonger(srcDir$, { pattern: "**/*.html" }).bind(dir =>
+          pathrewritemonger(dir, {
+            pattern: /\.scss$/,
+            replacer: ".css"
+          })
+        )
     )
-    .bypass(isHtml, f$ =>
-      pathrewritemonger(f$, {
-        pattern: /^\/(src|styles)/,
-        replacer: "assets"
-      }).bind(f$ =>
-        pathrewritemonger(f$, {
-          pattern: /\.scss$/,
-          replacer: ".css"
-        })
-      )
-    )
-    .unit(srcDir, destDir)
+    .unit(destDir)
 );
 
 module.exports = appmonger;

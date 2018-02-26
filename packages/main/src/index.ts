@@ -7,15 +7,15 @@ import {
   Run,
   Transform,
   Unit,
-  RelativePath,
   DirectoryStream,
-  IFilemonger
+  IFilemonger,
+  AbsolutePath
 } from "@filemonger/types";
 import * as helpers from "./helpers";
 import { Subject, Observable } from "rxjs";
 import filesInDir from "./helpers/files-in-dir";
 
-const { f, tmp, symlinkFile } = helpers;
+const { f, tmp, copyFile } = helpers;
 
 export { helpers };
 
@@ -23,19 +23,18 @@ export function makeFilemonger<Opts extends IDict<any>>(
   transform: Transform<Opts>
 ): Filemonger<Opts> {
   return (pathOrDirStream = "", opts = Object.create({})) => {
-    const unit: Unit = (srcRoot: string, destDir: string) => {
-      const resolvedSrcRoot = f.dir(f.abs(resolve(process.cwd(), srcRoot)));
+    const unit: Unit = (destDir: string) => {
       const finalDestDir = f.dir(f.abs(resolve(process.cwd(), destDir)));
       const srcDir$ =
         typeof pathOrDirStream === "string"
-          ? Observable.of(f.dir(f.rel(pathOrDirStream)))
-          : (pathOrDirStream as DirectoryStream<RelativePath>);
+          ? Observable.of(f.dir(f.abs(resolve(process.cwd(), pathOrDirStream))))
+          : (pathOrDirStream as DirectoryStream<AbsolutePath>);
 
-      return transform(srcDir$, resolvedSrcRoot, finalDestDir, opts);
+      return transform(srcDir$, finalDestDir, opts);
     };
 
-    const run: Run = (srcRoot, destDir, complete) => {
-      return unit(srcRoot, destDir).subscribe({
+    const run: Run = (destDir, complete) => {
+      return unit(destDir).subscribe({
         complete() {
           complete(undefined);
         },
@@ -46,25 +45,23 @@ export function makeFilemonger<Opts extends IDict<any>>(
     };
 
     const bind: BindOperator = mongerFactory => {
-      const bindingmonger = makeFilemonger((srcDir$, srcRoot, destDir) =>
-        tmp(tmpDir =>
-          mongerFactory(unit(srcRoot, tmpDir)).unit(tmpDir, destDir)
-        )
+      const bindingmonger = makeFilemonger((srcDir$, destDir) =>
+        tmp(tmpDir => mongerFactory(unit(tmpDir)).unit(destDir))
       );
 
       return bindingmonger();
     };
 
     const multicast: MulticastOperator = (...sinkFactories) => {
-      const multicastmonger = makeFilemonger((srcDir$, srcRoot, destDir) =>
+      const multicastmonger = makeFilemonger((srcDir$, destDir) =>
         srcDir$.multicast(
           () => new Subject(),
           srcDir$ =>
             Observable.merge(
-              ...sinkFactories.map(sF => sF(srcDir$).unit(srcRoot, destDir))
+              ...sinkFactories.map(sF => sF(srcDir$).unit(destDir))
             )
               .toArray()
-              .mapTo(f.dir(f.rel("")))
+              .mapTo(destDir)
         )
       );
 
@@ -81,30 +78,28 @@ export function makeFilemonger<Opts extends IDict<any>>(
 }
 
 export const merge = (...mongers: IFilemonger[]): IFilemonger => {
-  const mergemonger = makeFilemonger((_, srcRoot, destDir) =>
+  const mergemonger = makeFilemonger((_, destDir) =>
     Observable.from(mongers)
-      .flatMap(m => m.unit(srcRoot, destDir))
+      .flatMap(m => m.unit(destDir))
       .toArray()
-      .mapTo(f.dir(f.rel("")))
+      .mapTo(destDir)
   );
 
   return mergemonger();
 };
 
 export const filtermonger = makeFilemonger<{ pattern?: string }>(
-  (srcDir$, srcRoot, destDir, { pattern }) => {
-    return srcDir$.delayWhen(srcDir =>
-      filesInDir(
-        f.dir(f.abs(join(srcRoot, srcDir))),
-        pattern ? f.pat(pattern) : undefined
-      )
+  (srcDir$, destDir, { pattern }) => {
+    return srcDir$.mergeMap(srcDir =>
+      filesInDir(srcDir, pattern ? f.pat(pattern) : undefined)
         .delayWhen(file =>
-          symlinkFile(
-            f.dir(f.abs(join(srcRoot, srcDir, file))),
-            f.dir(f.abs(join(destDir, srcDir, file)))
+          copyFile(
+            f.fullPath(f.abs(join(srcDir, file))),
+            f.fullPath(f.abs(join(destDir, file)))
           )
         )
         .toArray()
+        .mapTo(destDir)
     );
   }
 );

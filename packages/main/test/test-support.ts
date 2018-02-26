@@ -43,17 +43,17 @@ export function createTmpDirSync(): Directory<AbsolutePath> {
 }
 
 export const babelmonger: Filemonger = makeFilemonger(
-  (file$, srcDir, destDir, opts) => {
+  (srcDir$, destDir, opts) => {
     const observableBabelTransform = Observable.bindNodeCallback(transformFile);
 
-    return file$.delayWhen(file =>
+    return srcDir$.delayWhen(srcDir =>
       observableBabelTransform(
-        resolve(srcDir, file),
+        srcDir,
         opts || require(join(process.cwd(), ".babelrc"))
       )
         .map(({ code }) => code!)
         .flatMap(code =>
-          writeFile(f.fullPath(f.abs(resolve(destDir, file))), code)
+          writeFile(f.fullPath(f.abs(resolve(destDir, srcDir))), code)
         )
     );
   }

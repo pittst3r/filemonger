@@ -4,26 +4,20 @@ const { join } = require("path");
 const yargs = require("yargs");
 
 const argv = yargs
-  .option("src", {
-    alias: "s",
-    describe: "Source directory to pull files from",
-    type: "string"
-  })
   .option("dest", {
     alias: "d",
     describe: "Destination directory to place transformed files",
     type: "string"
   })
-  .demandOption(["src", "dest"]).argv;
+  .demandOption(["dest"]).argv;
 
-const srcRoot = argv.src;
 const destDir = argv.dest;
 
 const mongerfile = require(join(process.cwd(), "mongerfile"));
 
 console.log("Filemongering...");
 console.time("Time");
-mongerfile.run(srcRoot, destDir, err => {
+mongerfile.run(destDir, err => {
   console.timeEnd("Time");
 
   if (err) {

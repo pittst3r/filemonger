@@ -1,9 +1,4 @@
-import {
-  RelativePath,
-  Directory,
-  AbsolutePath,
-  DirectoryStream
-} from "@filemonger/types";
+import { Directory, AbsolutePath, DirectoryStream } from "@filemonger/types";
 import f = require("./file");
 import rimraf = require("rimraf");
 import { join } from "path";
@@ -13,8 +8,8 @@ import { Observable } from "rxjs";
 const TMP_NAMESPACE = "filemonger";
 
 export default function tmp(
-  fn: (tmpDir: Directory<AbsolutePath>) => DirectoryStream<RelativePath>
-): DirectoryStream<RelativePath> {
+  fn: (tmpDir: Directory<AbsolutePath>) => DirectoryStream<AbsolutePath>
+): DirectoryStream<AbsolutePath> {
   return createTmpDir().flatMap(tmpDir =>
     fn(tmpDir).do({
       complete() {

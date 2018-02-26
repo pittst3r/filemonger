@@ -2,19 +2,18 @@ import { Observable } from "rxjs";
 import { ConnectableObservable } from "rxjs";
 
 type BindOperator = (
-  fn: (unit: DirectoryStream<RelativePath>) => IFilemonger
+  fn: (unit: DirectoryStream<AbsolutePath>) => IFilemonger
 ) => IFilemonger;
 
 type MulticastOperator = (
   ...sinkFactories: Array<
-    (srcDir$: DirectoryStream<RelativePath>) => IFilemonger
+    (srcDir$: DirectoryStream<AbsolutePath>) => IFilemonger
   >
 ) => IFilemonger;
 
-type Unit = (srcRoot: string, destDir: string) => DirectoryStream<RelativePath>;
+type Unit = (destDir: string) => DirectoryStream<AbsolutePath>;
 
 type Run = (
-  srcRoot: string,
   destDir: string,
   complete: (err: Error | undefined) => void
 ) => void;
@@ -37,11 +36,10 @@ export type Filemonger<Opts extends IDict<any> = IDict<any>> = (
 ) => IFilemonger;
 
 export type Transform<Opts extends IDict<any>> = (
-  srcDir$: DirectoryStream<RelativePath>,
-  srcRoot: Directory<AbsolutePath>,
+  srcDir$: DirectoryStream<AbsolutePath>,
   destDir: Directory<AbsolutePath>,
   options: Opts
-) => DirectoryStream<RelativePath>;
+) => DirectoryStream<AbsolutePath>;
 
 export type Extension = string & {
   __extensionBrand: any;

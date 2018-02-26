@@ -3,6 +3,7 @@ import { readFileSync, mkdtempSync } from "fs";
 import { join, resolve } from "path";
 import { tmpdir } from "os";
 import * as rimraf from "rimraf";
+import * as glob from "glob";
 import { typescriptmonger } from "../src";
 
 describe("typescriptmonger", () => {
@@ -18,7 +19,8 @@ describe("typescriptmonger", () => {
 
   it("works", done => {
     const srcDir = resolve("fixtures/src");
-    const instance = typescriptmonger("index.ts", {
+    const instance = typescriptmonger(srcDir, {
+      entry: "index.ts",
       compilerOptions: {
         target: "es2015",
         module: "commonjs",
@@ -27,13 +29,17 @@ describe("typescriptmonger", () => {
       }
     });
 
-    instance.run(srcDir, destDir, (err, files) => {
+    instance.run(destDir, err => {
       if (err) throw err;
 
-      const actual: { content: string; file: string }[] = files.map(file => ({
-        file,
-        content: readFileSync(join(destDir, file)).toString()
-      }));
+      const actual: { content: string; file: string }[] = glob
+        .sync("**/*.*", {
+          cwd: destDir
+        })
+        .map(file => ({
+          file,
+          content: readFileSync(join(destDir, file)).toString()
+        }));
 
       assert.sameDeepMembers(actual, [
         {

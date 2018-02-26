@@ -1,5 +1,5 @@
-import { makeFilemonger, helpers } from "@filemonger/main";
-import { Filemonger } from "@filemonger/types";
+import { makeFilemonger } from "@filemonger/main";
+import { Filemonger, IDict } from "@filemonger/types";
 import { join } from "path";
 import {
   createProgram,
@@ -8,12 +8,15 @@ import {
 } from "typescript";
 import handleDiagnostics from "./handle-diagnostics";
 
-const typescriptmonger: Filemonger = makeFilemonger(
-  (file$, srcDir, destDir, opts) =>
-    file$
-      .map(file => join(srcDir, file))
-      .toArray()
-      .do(files => {
+export interface IOpts {
+  entry: string;
+  compilerOptions?: IDict<any>;
+}
+
+const typescriptmonger: Filemonger<IOpts> = makeFilemonger(
+  (srcDir$, destDir, opts) =>
+    srcDir$
+      .do(srcDir => {
         const tsConfig = require(join(process.cwd(), "tsconfig.json")) || {};
         const baseOptions =
           opts.compilerOptions || tsConfig.compilerOptions || {};
@@ -25,13 +28,16 @@ const typescriptmonger: Filemonger = makeFilemonger(
           },
           process.cwd()
         ).options;
-        const program = createProgram(files, compilerOptions);
+        const program = createProgram(
+          [join(srcDir, opts.entry)],
+          compilerOptions
+        );
         const diagnostics = getPreEmitDiagnostics(program);
 
         handleDiagnostics(diagnostics);
         program.emit();
       })
-      .flatMapTo(helpers.filesInDir(destDir))
+      .mapTo(destDir)
 );
 
 export { typescriptmonger };
