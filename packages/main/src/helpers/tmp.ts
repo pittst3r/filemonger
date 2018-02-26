@@ -1,5 +1,4 @@
 import {
-  FileStream,
   RelativePath,
   Directory,
   AbsolutePath,
@@ -14,8 +13,8 @@ import { Observable } from "rxjs";
 const TMP_NAMESPACE = "filemonger";
 
 export default function tmp(
-  fn: (tmpDir: Directory<AbsolutePath>) => FileStream<RelativePath>
-): FileStream<RelativePath> {
+  fn: (tmpDir: Directory<AbsolutePath>) => DirectoryStream<RelativePath>
+): DirectoryStream<RelativePath> {
   return createTmpDir().flatMap(tmpDir =>
     fn(tmpDir).do({
       complete() {

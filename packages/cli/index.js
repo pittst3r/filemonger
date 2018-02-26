@@ -16,14 +16,14 @@ const argv = yargs
   })
   .demandOption(["src", "dest"]).argv;
 
-const srcDir = argv.src;
+const srcRoot = argv.src;
 const destDir = argv.dest;
 
 const mongerfile = require(join(process.cwd(), "mongerfile"));
 
 console.log("Filemongering...");
 console.time("Time");
-mongerfile.run(srcDir, destDir, (err, files) => {
+mongerfile.run(srcRoot, destDir, err => {
   console.timeEnd("Time");
 
   if (err) {

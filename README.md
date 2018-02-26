@@ -69,7 +69,7 @@ const passthrumonger = makeFilemonger((file$, srcDir, destDir) =>
 ## Installation
 
 ```sh
-yarn add [-D] @filemonger/main [@filemonger/cli] [@filemonger/types]
+yarn add [-D] @filemonger/main [@filemonger/cli]
 ```
 
 ## API
