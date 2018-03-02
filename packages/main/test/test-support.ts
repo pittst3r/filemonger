@@ -9,7 +9,7 @@ import {
   FullPath,
   Filemonger
 } from "@filemonger/types";
-import { makeFilemonger, helpers } from "../src";
+import { make, helpers } from "../src";
 import { readFileSync } from "fs";
 
 const { f, writeFile } = helpers;
@@ -42,17 +42,15 @@ export function createTmpDirSync(): Directory<AbsolutePath> {
   return path;
 }
 
-export const babelmonger: Filemonger = makeFilemonger(
-  (srcDir, destDir, opts) => {
-    const observableBabelTransform = Observable.bindNodeCallback(transformFile);
+export const babelmonger: Filemonger = make((srcDir, destDir, opts) => {
+  const observableBabelTransform = Observable.bindNodeCallback(transformFile);
 
-    return observableBabelTransform(
-      srcDir,
-      opts || require(join(process.cwd(), ".babelrc"))
-    )
-      .map(({ code }) => code!)
-      .flatMap(code =>
-        writeFile(f.fullPath(f.abs(resolve(destDir, srcDir))), code)
-      );
-  }
-);
+  return observableBabelTransform(
+    srcDir,
+    opts || require(join(process.cwd(), ".babelrc"))
+  )
+    .map(({ code }) => code!)
+    .flatMap(code =>
+      writeFile(f.fullPath(f.abs(resolve(destDir, srcDir))), code)
+    );
+});

@@ -1,4 +1,4 @@
-import { makeFilemonger } from "@filemonger/main";
+import { make } from "@filemonger/main";
 import { Filemonger, IDict } from "@filemonger/types";
 import { join } from "path";
 import {
@@ -13,24 +13,22 @@ export interface IOpts {
   compilerOptions?: IDict<any>;
 }
 
-const typescriptmonger: Filemonger<IOpts> = makeFilemonger(
-  (srcDir, destDir, opts) => {
-    const tsConfig = require(join(process.cwd(), "tsconfig.json")) || {};
-    const baseOptions = opts.compilerOptions || tsConfig.compilerOptions || {};
-    const compilerOptions = convertCompilerOptionsFromJson(
-      {
-        ...baseOptions,
-        rootDir: srcDir,
-        outDir: destDir
-      },
-      process.cwd()
-    ).options;
-    const program = createProgram([join(srcDir, opts.entry)], compilerOptions);
-    const diagnostics = getPreEmitDiagnostics(program);
+const typescriptmonger: Filemonger<IOpts> = make((srcDir, destDir, opts) => {
+  const tsConfig = require(join(process.cwd(), "tsconfig.json")) || {};
+  const baseOptions = opts.compilerOptions || tsConfig.compilerOptions || {};
+  const compilerOptions = convertCompilerOptionsFromJson(
+    {
+      ...baseOptions,
+      rootDir: srcDir,
+      outDir: destDir
+    },
+    process.cwd()
+  ).options;
+  const program = createProgram([join(srcDir, opts.entry)], compilerOptions);
+  const diagnostics = getPreEmitDiagnostics(program);
 
-    handleDiagnostics(diagnostics);
-    program.emit();
-  }
-);
+  handleDiagnostics(diagnostics);
+  program.emit();
+});
 
 export { typescriptmonger };

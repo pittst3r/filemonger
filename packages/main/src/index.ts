@@ -22,64 +22,62 @@ const isSubscribable = (thing: any): thing is Observable<Opaque> =>
 
 const isPromise = (thing: any): thing is Promise<Opaque> => thing && thing.then;
 
-export function makeFilemonger<Opts extends IDict<any>>(
+export const make = <Opts extends IDict<any>>(
   transform: Transform<Opts>
-): Filemonger<Opts> {
-  return (srcDir = "", opts = Object.create({})) => {
-    const writeTo: WriteTo = (destDir: string) => {
-      const resolvedSrcDir = f.dir(f.abs(resolve(process.cwd(), srcDir)));
-      const resolvedDestDir = f.dir(f.abs(resolve(process.cwd(), destDir)));
-      const result = transform(resolvedSrcDir, resolvedDestDir, opts);
+): Filemonger<Opts> => (srcDir = "", opts = Object.create({})) => {
+  const writeTo: WriteTo = (destDir: string) => {
+    const resolvedSrcDir = f.dir(f.abs(resolve(process.cwd(), srcDir)));
+    const resolvedDestDir = f.dir(f.abs(resolve(process.cwd(), destDir)));
+    const result = transform(resolvedSrcDir, resolvedDestDir, opts);
 
-      if (isSubscribable(result)) {
-        return result.mapTo(null);
-      }
+    if (isSubscribable(result)) {
+      return result.mapTo(null);
+    }
 
-      if (isPromise(result)) {
-        return Observable.fromPromise(result).mapTo(null);
-      }
+    if (isPromise(result)) {
+      return Observable.fromPromise(result).mapTo(null);
+    }
 
-      return Observable.of(result).mapTo(null);
-    };
-
-    const run: Run = (destDir, complete) => {
-      return writeTo(destDir).subscribe({
-        complete() {
-          complete(undefined);
-        },
-        error(err) {
-          complete(err);
-        }
-      });
-    };
-
-    const bind: BindOperator = mongerFactory => {
-      const bindingmonger = makeFilemonger((_, destDir) =>
-        tmp(tmpDir =>
-          writeTo(tmpDir).mergeMap(() => mongerFactory(tmpDir).writeTo(destDir))
-        )
-      );
-
-      return bindingmonger();
-    };
-
-    return {
-      bind,
-      writeTo,
-      run
-    };
+    return Observable.of(result).mapTo(null);
   };
-}
+
+  const run: Run = (destDir, complete) => {
+    return writeTo(destDir).subscribe({
+      complete() {
+        complete(undefined);
+      },
+      error(err) {
+        complete(err);
+      }
+    });
+  };
+
+  const bind: BindOperator = mongerFactory => {
+    const bindingmonger = make((_, destDir) =>
+      tmp(tmpDir =>
+        writeTo(tmpDir).mergeMap(() => mongerFactory(tmpDir).writeTo(destDir))
+      )
+    );
+
+    return bindingmonger();
+  };
+
+  return {
+    bind,
+    writeTo,
+    run
+  };
+};
 
 export const merge = (...mongers: IFilemonger[]): IFilemonger => {
-  const mergemonger = makeFilemonger((_, destDir) =>
+  const mergemonger = make((_, destDir) =>
     Observable.forkJoin(mongers.map(m => m.writeTo(destDir)))
   );
 
   return mergemonger();
 };
 
-export const filtermonger = makeFilemonger<{ pattern?: string }>(
+export const filtermonger = make<{ pattern?: string }>(
   (srcDir, destDir, { pattern }) =>
     filesInDir(srcDir, pattern ? f.pat(pattern) : undefined)
       .delayWhen(file =>

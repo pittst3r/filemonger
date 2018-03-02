@@ -1,11 +1,9 @@
 # Filemonger
 
-* [Introduction](#introduction)
+* [Demo](#demo)
 * [Installation](#installation)
 * [API](#api)
 * [CLI](#cli)
-
-## Introduction
 
 Filemonger seeks to make it easy to create a file processing pipeline by
 providing interfaces for composing single-purpose filemongers into compound
@@ -19,7 +17,7 @@ Filemonger instances are executed lazily, so once you've composed your pipeline
 you can kick it off with a destination directory, or export it for later usage,
 or wrap your instance in a new filemonger and share it with others.
 
-### Demo
+## Demo
 
 To see a Parcel-like (yet very stripped down), end-to-end working example, see
 [this preact-todomvc fork](https://github.com/robbiepitts/preact-todomvc/tree/filemonger).
@@ -44,7 +42,9 @@ emissions will be awaited. `opts` is where options passed to your filemonger
 come in. If no options were passed then `opts` will be an empty object.
 
 ```ts
-const foomonger = makeFilemonger((srcDir, destDir, opts) => {
+import { make } from "@filemonger/main";
+
+const foomonger = make((srcDir, destDir, opts) => {
   // Do stuff
 });
 ```
@@ -105,7 +105,9 @@ firstmonger("src").run("dist", err => {
 #### `#writeTo()`
 
 ```ts
-const timemonger = makeFilemonger((srcDir, destDir, opts) => {
+import { make } from "@filemonger/main";
+
+const timemonger = make((srcDir, destDir, opts) => {
   console.time(opts.descriptor);
 
   return opts
@@ -127,7 +129,9 @@ demo mentioned above.
 First make a package that exports a filemonger:
 
 ```ts
-const appmonger = makeFilemonger((srcDir, destDir, { entry }) =>
+import { make } from "@filemonger/main";
+
+const appmonger = make((srcDir, destDir, { entry }) =>
   htmlentrypointmonger(srcDir, { entry })
     .bind(srcDir =>
       merge(
