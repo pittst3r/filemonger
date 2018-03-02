@@ -2,16 +2,10 @@ import { Observable } from "rxjs";
 import { ConnectableObservable } from "rxjs";
 
 type BindOperator = (
-  fn: (unit: DirectoryStream<AbsolutePath>) => IFilemonger
+  fn: (unit: Directory<AbsolutePath>) => IFilemonger
 ) => IFilemonger;
 
-type MulticastOperator = (
-  ...sinkFactories: Array<
-    (srcDir$: DirectoryStream<AbsolutePath>) => IFilemonger
-  >
-) => IFilemonger;
-
-type Unit = (destDir: string) => DirectoryStream<AbsolutePath>;
+type WriteTo = (destDir: string) => OpaqueStream;
 
 type Run = (
   destDir: string,
@@ -20,10 +14,9 @@ type Run = (
 
 export interface IFilemonger {
   bind: BindOperator;
-  multicast: MulticastOperator;
 
   run: Run;
-  unit: Unit;
+  writeTo: WriteTo;
 }
 
 export interface IDict<T> {
@@ -31,15 +24,15 @@ export interface IDict<T> {
 }
 
 export type Filemonger<Opts extends IDict<any> = IDict<any>> = (
-  pathOrDirStream?: string | Observable<string>,
+  srcDir?: string,
   options?: Opts
 ) => IFilemonger;
 
 export type Transform<Opts extends IDict<any>> = (
-  srcDir$: DirectoryStream<AbsolutePath>,
+  srcDir: Directory<AbsolutePath>,
   destDir: Directory<AbsolutePath>,
   options: Opts
-) => DirectoryStream<AbsolutePath>;
+) => OpaqueStream | Promise<Opaque> | Opaque;
 
 export type Extension = string & {
   __extensionBrand: any;
@@ -77,3 +70,7 @@ export type FileStream<P extends Path> = Observable<FullPath<P>>;
 export type DirectoryStream<P extends Path> = Observable<Directory<P>>;
 
 export type VoidStream = Observable<void>;
+
+export type Opaque = object | null | undefined | void;
+
+export type OpaqueStream = Observable<Opaque>;

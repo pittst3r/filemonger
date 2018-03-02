@@ -14,30 +14,23 @@ export interface IOpts {
 }
 
 const typescriptmonger: Filemonger<IOpts> = makeFilemonger(
-  (srcDir$, destDir, opts) =>
-    srcDir$
-      .do(srcDir => {
-        const tsConfig = require(join(process.cwd(), "tsconfig.json")) || {};
-        const baseOptions =
-          opts.compilerOptions || tsConfig.compilerOptions || {};
-        const compilerOptions = convertCompilerOptionsFromJson(
-          {
-            ...baseOptions,
-            rootDir: srcDir,
-            outDir: destDir
-          },
-          process.cwd()
-        ).options;
-        const program = createProgram(
-          [join(srcDir, opts.entry)],
-          compilerOptions
-        );
-        const diagnostics = getPreEmitDiagnostics(program);
+  (srcDir, destDir, opts) => {
+    const tsConfig = require(join(process.cwd(), "tsconfig.json")) || {};
+    const baseOptions = opts.compilerOptions || tsConfig.compilerOptions || {};
+    const compilerOptions = convertCompilerOptionsFromJson(
+      {
+        ...baseOptions,
+        rootDir: srcDir,
+        outDir: destDir
+      },
+      process.cwd()
+    ).options;
+    const program = createProgram([join(srcDir, opts.entry)], compilerOptions);
+    const diagnostics = getPreEmitDiagnostics(program);
 
-        handleDiagnostics(diagnostics);
-        program.emit();
-      })
-      .mapTo(destDir)
+    handleDiagnostics(diagnostics);
+    program.emit();
+  }
 );
 
 export { typescriptmonger };

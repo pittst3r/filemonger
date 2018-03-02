@@ -16,8 +16,8 @@ describe("filemonger", () => {
     rimraf.sync(destDir);
   });
 
-  describe("passthrumonger", () => {
-    it("links", done => {
+  describe("filtermonger", () => {
+    it("works", done => {
       const srcDir = fixturesPath();
 
       filtermonger(srcDir).run(destDir, err => {
@@ -84,7 +84,7 @@ describe("filemonger", () => {
         const srcDir = fixturesPath();
 
         filtermonger(srcDir)
-          .bind(srcDir$ => filtermonger(srcDir$, { pattern: "text/*" }))
+          .bind(srcDir => filtermonger(srcDir, { pattern: "text/*" }))
           .run(destDir, err => {
             if (err) throw err;
 
@@ -92,28 +92,6 @@ describe("filemonger", () => {
               "text",
               "text/bar.txt",
               "text/baz.txt"
-            ]);
-
-            done();
-          });
-      });
-    });
-
-    describe("#multicast()", () => {
-      it("streams transform results into multiple other mongers and merges them, creating a new filemonger instance", done => {
-        const srcDir = fixturesPath();
-
-        filtermonger(srcDir)
-          .multicast(
-            srcDir$ => filtermonger(srcDir$, { pattern: "**/bar.txt" }),
-            srcDir$ => filtermonger(srcDir$, { pattern: "**/types.d.ts" })
-          )
-          .run(destDir, err => {
-            if (err) throw err;
-
-            assert.sameMembers(glob.sync("**/*.*", { cwd: destDir }), [
-              "text/bar.txt",
-              "typescript/types.d.ts"
             ]);
 
             done();

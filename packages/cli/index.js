@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const { join } = require("path");
+const { ensureDir } = require("fs-extra");
 const yargs = require("yargs");
 
 const argv = yargs
@@ -15,13 +16,20 @@ const destDir = argv.dest;
 
 const mongerfile = require(join(process.cwd(), "mongerfile"));
 
-console.log("Filemongering...");
-console.time("Time");
-mongerfile.run(destDir, err => {
-  console.timeEnd("Time");
-
+ensureDir(destDir, err => {
   if (err) {
     console.error(err);
     process.exit(1);
+    return;
   }
+
+  console.time("Filemonger");
+  mongerfile.run(destDir, err => {
+    console.timeEnd("Filemonger");
+
+    if (err) {
+      console.error(err);
+      process.exit(1);
+    }
+  });
 });
