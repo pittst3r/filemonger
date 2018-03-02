@@ -10,61 +10,22 @@
 Filemonger seeks to make it easy to create a file processing pipeline by
 providing interfaces for composing single-purpose filemongers into compound
 filemongers. A filemonger is a function which represents a transformation that
-may be applied to a stream of files. Effectual code is encapsulated in
-filemongers, hidden away from functional pipeline code.
+may be applied to a directory. Effectual code is encapsulated in filemongers,
+hidden away from functional pipeline code.
 
 One composes a pipeline of filemonger instances into a compound filemonger
 instance, which may be further composed into another compound instance.
 Filemonger instances are executed lazily, so once you've composed your pipeline
-you can kick it off with a source directory and a destination directory, or
-export it for later usage, or wrap your instance in a new filemonger and share
-it with others.
+you can kick it off with a destination directory, or export it for later usage,
+or wrap your instance in a new filemonger and share it with others.
 
 ### Demo
 
 To see a Parcel-like (yet very stripped down), end-to-end working example, see
-[@filemonger/demo](packages/demo). Start by looking at the package.json build
-script, which runs the `mongerfile.js`. This kicks off a build pipeline using
-filemongers in the `build` directory of the demo. Source files are in the `app`
-directory and output files are in the `dist` directory.
-
-### Using filemongers
-
-```ts
-import {
-  typescriptmonger,
-  passthrumonger,
-  babelmonger,
-  closurecompilermonger
-} from "some-cool-package";
-
-// Compile TS w/ declaration files; process the JS with Babel while allowing the
-// `.d.ts` files to bypass.
-
-const matchesJs = f => !!f.match(/\.js$/);
-const compoundmonger = typescriptmonger("index.ts").bypass(
-  matchesJs,
-  babelmonger
-);
-
-compoundmonger.run("./src", "./dist", (err, files) => {
-  console.log("Output files:");
-  files.forEach(console.log);
-});
-```
-
-### Creating a filemonger
-
-```ts
-import { makeFilemonger, helpers } from "@filemonger/main";
-import { join } from "path";
-
-const passthrumonger = makeFilemonger((file$, srcDir, destDir) =>
-  file$.delayWhen(file =>
-    helpers.symlinkFile(join(srcDir, file), join(destDir, file))
-  )
-);
-```
+[this preact-todomvc fork](https://github.com/robbiepitts/preact-todomvc/tree/filemonger).
+Start by looking at the package.json `build` and `start` scripts, which run the
+`mongerfile.js`. This kicks off a build pipeline using filemongers in the
+`build` directory.
 
 ## Installation
 
@@ -77,13 +38,13 @@ yarn add [-D] @filemonger/main [@filemonger/cli]
 ### Making a filemonger
 
 Read files from `srcDir`, transform them, and place the new files in the
-`destDir`, returning a stream of the new file paths which may or may not have
-changed. `file$` is an Rxjs stream of file paths relative to the `srcDir`.
-`opts` is the option object passed in through the filemonger invocation as the
-second argument. If no options were passed then `opts` will be an empty object.
+`destDir`, returning an `Observable`, `Promise`, or nothing (in case of a
+syncronous operation). If your filemonger returns an `Observable` or `Promise`,
+emissions will be awaited. `opts` is where options passed to your filemonger
+come in. If no options were passed then `opts` will be an empty object.
 
 ```ts
-const foomonger = makeFilemonger((file$, srcDir, destDir, opts) => {
+const foomonger = makeFilemonger((srcDir, destDir, opts) => {
   // Do stuff
 });
 ```
@@ -91,137 +52,96 @@ const foomonger = makeFilemonger((file$, srcDir, destDir, opts) => {
 ### Invoking a filemonger
 
 Invoking a filemonger (i.e. instantiating it) gives us an interface which
-we can use to compose this instance with other filemonger instances. The
-instantiation of a filemonger captures a particular stream of files, and maybe
-some options. Specifying a source directory and destination directory happens
-later.
+we can use to compose this instance with other filemonger instances.
 
 ```ts
-passthrumonger("img/**/*");
+filtermonger("src", { pattern: "**/*.js" });
 ```
 
 ### Composing filemongers
 
 #### `#bind()`
 
-Binds one filemonger to another, essentially linking them together.
+Binds one filemonger to another, linking them together into a pipeline.
 
 ```ts
-firstmonger().bind(file$ => secondmonger(file$));
+firstmonger().bind(srcDir => secondmonger(srcDir));
 // or simply
 firstmonger().bind(secondmonger);
 ```
 
-All the output files from `firstmonger` get piped into `secondmonger` when the
-pipeline is run. After `bind`ing we are left with a new filemonger instance that
-can be further composed.
+The output directory gets piped into `secondmonger` when the pipeline is run.
+After `bind`ing we are left with a new filemonger instance that can be
+further composed.
 
-#### `#merge()`
+#### `merge()`
 
-Merges one filemonger instance with another. Useful for funneling multiple
-sources into the same pipeline.
-
-```ts
-firstmonger().merge(secondmonger());
-```
-
-Unlike with `#bind()`, `#merge()` requires a filemonger instance be provided
-rather than a filemonger instance factory. This is because we are merging two
-different streams which are responsible for their own source.
-
-#### `#multicast()`
-
-Sends the same file stream to multiple other filemongers. You can use this to
-split processing into multiple branches. `#multicast()` will merge these
-branches back into a single pipeline for you.
+Merges one filemonger instance with another, creating a new filemonger. Useful
+for funneling multiple sources into the same pipeline.
 
 ```ts
-firstmonger().multicast(secondmonger, thirdmonger);
-```
+import { merge } from "@filemonger/main";
 
-#### `#bypass()`
-
-Sends the file stream through a predicate; if true the file passes into
-the given filemonger, if false bypasses the filemonger and merges in with the
-files that exited the filemonger. Syntactic sugar on a fancy multicast.
-
-```ts
-const isGif = f => f.match(/\.gif$/);
-
-imagemonger()
-  .bypass(isGif, gifreezemonger)
-  .bind(thumbnailmonger);
+merge(firstmonger(), secondmonger()).bind(thirdmonger);
 ```
 
 ### Running filemongers
 
-There are two ways to run a filemonger pipeline, the `#run()` and `#unit()`
-methods. `#run()` does not expose the file stream and allows for a callback to
-be provided which is called upon completion. This is the recommended API for
-general filemonger usage. `#unit()` is a lower-level API to be used in the
-creation of filemongers and returns an unsubscribed Rxjs stream of files.
+There are two ways to run a filemonger pipeline, the `#run()` and `#writeTo()`
+methods. `#run()` does not expose the stream and allows for a callback to
+be provided which is called upon completion or error. This is the recommended
+API for general filemonger usage. `#writeTo()` is a lower-level API to be used
+in the creation of filemongers and returns an Rxjs `Observable`.
 
 #### `#run()`
 
 ```ts
-firstmonger()
-  .multicast(secondmonger, thirdmonger)
-  .run("./src", "./dist", (err, files) => {
-    console.log("Donezo");
-    console.log("Output files:");
-    files.forEach(console.log);
-  });
+firstmonger("src").run("dist", err => {
+  if (err) throw err;
+  console.log("Donezo");
+});
 ```
 
-#### `#unit()`
+#### `#writeTo()`
 
 ```ts
-const loggingmonger = makeFilemonger((file$, srcDir, destDir, opts) => {
-  if (typeof opts.monger !== "function") {
-    throw new Error("BAD");
-  }
+const timemonger = makeFilemonger((srcDir, destDir, opts) => {
+  console.time(opts.descriptor);
 
   return opts
-    .monger(file$, opts)
-    .unit(srcDir, destDir)
-    .do(console.log);
+    .monger(srcDir, opts.options)
+    .writeTo(destDir)
+    .do(() => console.timeEnd(opts.descriptor));
 });
 ```
 
 ### Authoring and sharing compound filemongers
 
 If you've made a filemonger pipeline you want to share with others, you want
-to wrap it in a new filemonger. This combines all of the previously mentioned
-APIs, and potentially some Rxjs APIs, as with the following example.
+to wrap it in a new filemonger.
 
 You can see with this example that this moderately complex pipeline is concisely
-expressed (and could be expressed other ways). Some of the functions and
-filemongers in this example are hand-waved for brevity. To see a complete
-example see the demo package.
+expressed (and could be expressed other ways). To see a complete example see the
+demo mentioned above.
 
 First make a package that exports a filemonger:
 
 ```ts
-const appmonger = makeFilemonger((entrypoint$, srcDir, destDir) =>
-  htmlentrypointmonger(entrypoint$)
-    .multicast(
-      f$ => movemonger(f$.filter(inHtmlDir), { path: "../.." }),
-      f$ => movemonger(f$.filter(inSrcDir), { path: "../assets" }),
-      f$ => movemonger(f$.filter(inStylesDir), { path: "../assets" })
-    )
-    .bypass(isHtml, f$ =>
-      pathrewritemonger(f$, {
-        pattern: /^\/(src|styles)/,
-        replacer: "assets"
-      }).bind(f$ =>
-        pathrewritemonger(f$, {
-          pattern: /\.scss$/,
-          replacer: ".css"
-        })
+const appmonger = makeFilemonger((srcDir, destDir, { entry }) =>
+  htmlentrypointmonger(srcDir, { entry })
+    .bind(srcDir =>
+      merge(
+        filtermonger(srcDir, { pattern: "**/*.js" }),
+        filtermonger(srcDir, { pattern: "**/*.css" }),
+        filtermonger(srcDir, { pattern: "**/*.html" }).bind(srcDir =>
+          pathrewritemonger(srcDir, {
+            pattern: /\.scss$/,
+            replacer: ".css"
+          })
+        )
       )
     )
-    .bind(fingerprintmonger)
-    .unit(srcDir, destDir)
+    .writeTo(destDir)
 );
 
 export { appmonger };
@@ -230,18 +150,16 @@ export { appmonger };
 Which could then be consumed in a `mongerfile.js`:
 
 ```ts
-const { appmonger } = require("some-cool-package");
-const { movemonger } = require("some-other-cool-package");
+const appmonger = require("./build/appmonger");
+const htmlentrypointmonger = require("./build/htmlentrypointmonger");
 
-module.exports = appmonger("/static/html/*").merge(
-  movemonger("/static/img/**/*", { path: "../../img" })
-);
+module.exports = appmonger("src", { entry: "index.html" });
 ```
 
 And then with the CLI:
 
 ```sh
-fm -s app -d dist
+fm -d dist
 ```
 
 ## CLI
@@ -251,4 +169,4 @@ Filemonger comes with a barebones CLI to simplify usage:
 1. Run `yarn add -D @filemonger/cli`
 2. Add a `mongerfile.js` to the root of your project
 3. Export a filemonger instance from your `mongerfile.js` (see example above)
-4. Run `fm -s path/to/source/dir -d path/to/dest/dir`
+4. Run `fm -d path/to/dest/dir`
