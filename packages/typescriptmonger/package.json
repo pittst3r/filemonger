@@ -1,6 +1,6 @@
 {
   "name": "@filemonger/typescriptmonger",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "A filemonger for typescript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,7 +10,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "keywords": ["filemonger"],
+  "keywords": [
+    "filemonger"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.prod.json",
     "pretest": "tsc",
@@ -18,14 +20,16 @@
     "posttest": "rm -rf tmp",
     "prepublishOnly": "yarn build"
   },
-  "files": ["/dist"],
+  "files": [
+    "/dist"
+  ],
   "dependencies": {
-    "@filemonger/main": "^0.4.2",
-    "@filemonger/types": "^0.3.0",
+    "@filemonger/main": "^0.5.0",
+    "@filemonger/types": "^0.5.0",
     "@types/node": "^9.4.1"
   },
   "devDependencies": {
-    "@filemonger/cli": "^0.2.3",
+    "@filemonger/cli": "^0.5.0",
     "@types/chai": "^4.1.2",
     "@types/mocha": "^2.2.48",
     "@types/rimraf": "^2.0.2",

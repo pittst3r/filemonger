@@ -1,6 +1,6 @@
 {
   "name": "@filemonger/filtermonger",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "A filtering filemonger",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,7 +10,9 @@
   "publishConfig": {
     "access": "public"
   },
-  "keywords": ["filemonger"],
+  "keywords": [
+    "filemonger"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.prod.json",
     "pretest": "tsc",
@@ -18,10 +20,12 @@
     "posttest": "rm -rf tmp",
     "prepublishOnly": "yarn build"
   },
-  "files": ["/dist"],
+  "files": [
+    "/dist"
+  ],
   "dependencies": {
-    "@filemonger/main": "^0.4.2",
-    "@filemonger/types": "^0.3.0",
+    "@filemonger/main": "^0.5.0",
+    "@filemonger/types": "^0.5.0",
     "@types/node": "^9.4.1"
   },
   "devDependencies": {
