@@ -155,7 +155,6 @@ Which could then be consumed in a `mongerfile.js`:
 
 ```ts
 const appmonger = require("./build/appmonger");
-const htmlentrypointmonger = require("./build/htmlentrypointmonger");
 
 module.exports = appmonger("src", { entry: "index.html" });
 ```
