@@ -31,36 +31,25 @@ export const make = <Opts extends IDict<any>>(
     const result = transform(resolvedSrcDir, resolvedDestDir, opts);
 
     if (isSubscribable(result)) {
-      return result.mapTo(null);
+      return result.map(() => {});
     }
 
     if (isPromise(result)) {
-      return Observable.fromPromise(result).mapTo(null);
+      return Observable.fromPromise(result).map(() => {});
     }
 
-    return Observable.of(result).mapTo(null);
+    return Observable.of(result).map(() => {});
   };
 
-  const run: Run = (destDir, complete) => {
-    return writeTo(destDir).subscribe({
-      complete() {
-        complete(undefined);
-      },
-      error(err) {
-        complete(err);
-      }
-    });
-  };
+  const run: Run = (destDir, done = () => {}) =>
+    writeTo(destDir).subscribe({ complete: done, error: done });
 
-  const bind: BindOperator = mongerFactory => {
-    const bindingmonger = make((_, destDir) =>
+  const bind: BindOperator = factory =>
+    make((_, destDir) =>
       tmp(tmpDir =>
-        writeTo(tmpDir).mergeMap(() => mongerFactory(tmpDir).writeTo(destDir))
+        writeTo(tmpDir).mergeMap(() => factory(tmpDir).writeTo(destDir))
       )
-    );
-
-    return bindingmonger();
-  };
+    )();
 
   return {
     bind,
@@ -69,13 +58,10 @@ export const make = <Opts extends IDict<any>>(
   };
 };
 
-export const merge = (...mongers: IFilemonger[]): IFilemonger => {
-  const mergemonger = make((_, destDir) =>
-    Observable.forkJoin(mongers.map(m => m.writeTo(destDir)))
-  );
-
-  return mergemonger();
-};
+export const merge = (...instances: IFilemonger[]): IFilemonger =>
+  make((_, destDir) =>
+    Observable.forkJoin(instances.map(m => m.writeTo(destDir)))
+  )();
 
 export const filtermonger = make<{ pattern?: string }>(
   (srcDir, destDir, { pattern }) =>

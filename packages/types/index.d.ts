@@ -5,12 +5,9 @@ type BindOperator = (
   fn: (unit: Directory<AbsolutePath>) => IFilemonger
 ) => IFilemonger;
 
-type WriteTo = (destDir: string) => OpaqueStream;
+type WriteTo = (destDir: string) => VoidStream;
 
-type Run = (
-  destDir: string,
-  complete: (err: Error | undefined) => void
-) => void;
+type Run = (destDir: string, done?: (err?: Error) => void) => void;
 
 export interface IFilemonger {
   bind: BindOperator;
