@@ -1,7 +1,7 @@
 {
-  "name": "@filemonger/main",
+  "name": "@filemonger/filtermonger",
   "version": "0.4.2",
-  "description": "Process files with streams",
+  "description": "A filtering filemonger",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "repository": "https://github.com/robbiepitts/filemonger.git",
@@ -10,31 +10,27 @@
   "publishConfig": {
     "access": "public"
   },
+  "keywords": ["filemonger"],
   "scripts": {
     "build": "tsc -p tsconfig.prod.json",
     "pretest": "tsc",
     "test": "mocha tmp/test/**/*-test.js",
     "posttest": "rm -rf tmp",
-    "prepublishOnly": "yarn test && yarn build"
+    "prepublishOnly": "yarn build"
   },
   "files": ["/dist"],
   "dependencies": {
+    "@filemonger/main": "^0.4.2",
     "@filemonger/types": "^0.3.0",
-    "@types/fs-extra": "^5.0.0",
-    "fs-extra": "^5.0.0",
-    "rxjs": "^5.5.6"
+    "@types/node": "^9.4.1"
   },
   "devDependencies": {
-    "@filemonger/filtermonger": "^0.4.2",
-    "@types/babel-core": "^6.25.3",
     "@types/chai": "^4.1.2",
     "@types/mocha": "^2.2.48",
-    "babel-core": "^6.26.0",
+    "@types/rimraf": "^2.0.2",
     "chai": "^4.1.2",
+    "glob": "^7.1.2",
     "mocha": "^5.0.0",
-    "pre-commit": "^1.2.2",
-    "prettier": "^1.10.2",
-    "tslint": "^5.9.1",
-    "typescript": "~2.5.0"
+    "rimraf": "^2.6.2"
   }
 }

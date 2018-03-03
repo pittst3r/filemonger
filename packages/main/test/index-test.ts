@@ -1,7 +1,8 @@
 import { assert } from "chai";
 import * as rimraf from "rimraf";
 import { Directory, AbsolutePath } from "@filemonger/types";
-import { filtermonger, merge } from "../src";
+import { filtermonger } from "@filemonger/filtermonger";
+import { merge } from "../src";
 import { fixturesPath, createTmpDirSync } from "./test-support";
 import * as glob from "glob";
 
@@ -14,27 +15,6 @@ describe("filemonger", () => {
 
   afterEach(() => {
     rimraf.sync(destDir);
-  });
-
-  describe("filtermonger", () => {
-    it("works", done => {
-      const srcDir = fixturesPath();
-
-      filtermonger(srcDir).run(destDir, err => {
-        if (err) throw err;
-
-        assert.sameMembers(glob.sync("**/*", { cwd: destDir }), [
-          "text",
-          "text/bar.txt",
-          "text/baz.txt",
-          "typescript",
-          "typescript/types.d.ts",
-          "typescript/foo.ts"
-        ]);
-
-        done();
-      });
-    });
   });
 
   describe("merge()", () => {
