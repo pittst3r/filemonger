@@ -59,5 +59,5 @@ export const make = <Opts extends IDict<any>>(
 
 export const merge = (...instances: IFilemonger[]): IFilemonger =>
   make((_, destDir) =>
-    Observable.forkJoin(instances.map(m => m.writeTo(destDir)))
+    Observable.combineLatest(instances.map(m => m.writeTo(destDir)))
   )();
