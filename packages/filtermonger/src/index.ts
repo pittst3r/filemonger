@@ -1,6 +1,7 @@
 import { make, helpers } from "@filemonger/main";
 import { Filemonger } from "@filemonger/types";
 import { join } from "path";
+import { Observable } from "rxjs";
 
 const { filesInDir, copyFile, file: { fullPath, abs, pat } } = helpers;
 
@@ -17,5 +18,6 @@ export const filtermonger: Filemonger<IOpts> = make(
           fullPath(abs(join(destDir, file)))
         )
       )
+      .concat(Observable.of(null))
       .last()
 );
