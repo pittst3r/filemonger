@@ -1,6 +1,6 @@
 {
   "name": "@filemonger/typescriptmonger",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "A filemonger for typescript",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,7 +24,7 @@
     "/dist"
   ],
   "dependencies": {
-    "@filemonger/main": "^0.5.0",
+    "@filemonger/main": "^0.5.1",
     "@filemonger/types": "^0.5.0",
     "@types/node": "^9.4.1"
   },
