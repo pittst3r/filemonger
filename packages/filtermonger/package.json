@@ -1,6 +1,6 @@
 {
   "name": "@filemonger/filtermonger",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "A filtering filemonger",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -24,7 +24,7 @@
     "/dist"
   ],
   "dependencies": {
-    "@filemonger/main": "^0.5.1",
+    "@filemonger/main": "^0.5.2",
     "@filemonger/types": "^0.5.0",
     "@types/node": "^9.4.1",
     "rxjs": "^5.5.6"
