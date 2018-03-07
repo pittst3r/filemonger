@@ -1,25 +1,63 @@
 # Filemonger
 
+Filemonger is a generic, composable, code-over-config build pipeline tool for
+Node. Build your app, your library, or just process some files.
+
+A filemonger is a function which represents a transformation that may be applied
+to a directory. Using a very compact API, one may compose filemongers together
+to form compound filemongers, making it easy to concisely express both simple
+and complex build pipelines.
+
+Filemonger executes lazily, so once you've composed your pipeline you can kick
+it off at your leisure, or export it for usage elsewhere, or wrap your pipeline
+in a new filemonger and share it with others.
+
+* [Example](#example)
 * [Demo](#demo)
 * [Installation](#installation)
 * [API](#api)
 * [CLI](#cli)
 
-Filemonger seeks to make it easy to create a file processing pipeline by
-providing interfaces for composing single-purpose filemongers into compound
-filemongers. A filemonger is a function which represents a transformation that
-may be applied to a directory. Effectual code is encapsulated in filemongers,
-hidden away from functional pipeline code.
+## Example
 
-One composes a pipeline of filemonger instances into a compound filemonger
-instance, which may be further composed into another compound instance.
-Filemonger instances are executed lazily, so once you've composed your pipeline
-you can kick it off with a destination directory, or export it for later usage,
-or wrap your instance in a new filemonger and share it with others.
+Here is a simplified version of a common thing we do:
+
+```js
+module.exports = merge(
+  babelmonger("src").bind(srcDir =>
+    webpackmonger(srcDir, { entry: "app/index.js" })
+  ),
+  sassmonger("src", { file: "styles/index.scss" })
+);
+```
+
+If we were using webpack alone it might look like this:
+
+```js
+module.exports = {
+  entry: "./src/app/index",
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        use: {
+          loader: "babel-loader"
+        }
+      },
+      {
+        test: /\.scss$/,
+        use: {
+          loader: "sass-loader"
+        }
+      }
+    ]
+  }
+};
+```
 
 ## Demo
 
-To see a Parcel-like (yet very stripped down), end-to-end working example, see
+To see a Parcel-inspired (yet very stripped down), end-to-end working example, see
 [this preact-todomvc fork](https://github.com/robbiepitts/preact-todomvc/tree/filemonger).
 Start by looking at the package.json `build` and `start` scripts, which run the
 `mongerfile.js`. This kicks off a build pipeline using filemongers in the
@@ -129,34 +167,28 @@ demo mentioned above.
 First make a package that exports a filemonger:
 
 ```ts
-import { make } from "@filemonger/main";
+const { make } = require("@filemonger/main");
+// etc.
 
-const appmonger = make((srcDir, destDir, { entry }) =>
-  htmlentrypointmonger(srcDir, { entry })
-    .bind(srcDir =>
-      merge(
-        filtermonger(srcDir, { pattern: "**/*.js" }),
-        filtermonger(srcDir, { pattern: "**/*.css" }),
-        filtermonger(srcDir, { pattern: "**/*.html" }).bind(srcDir =>
-          pathrewritemonger(srcDir, {
-            pattern: /\.scss$/,
-            replacer: ".css"
-          })
-        )
-      )
-    )
-    .writeTo(destDir)
+const appmonger = make((srcDir, destDir) =>
+  merge(
+    filtermonger(srcDir, { pattern: "index.html" }),
+    babelmonger(srcDir).bind(srcDir =>
+      webpackmonger(srcDir, { entry: "app/index.js" })
+    ),
+    sassmonger(srcDir, { file: "styles/index.scss" })
+  ).writeTo(destDir)
 );
 
-export { appmonger };
+module.exports = appmonger;
 ```
 
 Which could then be consumed in a `mongerfile.js`:
 
-```ts
-const appmonger = require("./build/appmonger");
+```js
+const appmonger = require("some-cool-package");
 
-module.exports = appmonger("src", { entry: "index.html" });
+module.exports = appmonger("src");
 ```
 
 And then with the CLI:
