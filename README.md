@@ -57,7 +57,7 @@ module.exports = {
 
 ## Demo
 
-To see a Parcel-inspired (yet very stripped down), end-to-end working example, see
+To see an end-to-end working example, see
 [this preact-todomvc fork](https://github.com/robbiepitts/preact-todomvc/tree/filemonger).
 Start by looking at the package.json `build` and `start` scripts, which run the
 `mongerfile.js`. This kicks off a build pipeline using filemongers in the
