@@ -27,17 +27,20 @@ export const make = <Opts extends IDict<any>>(
   const writeTo: WriteTo = (destDir: string) => {
     const resolvedSrcDir = f.dir(f.abs(resolve(srcDir)));
     const resolvedDestDir = f.dir(f.abs(resolve(destDir)));
-    const result = transform(resolvedSrcDir, resolvedDestDir, opts);
 
-    if (isSubscribable(result)) {
-      return result.map(() => {});
-    }
+    return Observable.defer(() => {
+      const result = transform(resolvedSrcDir, resolvedDestDir, opts);
 
-    if (isPromise(result)) {
-      return Observable.fromPromise(result).map(() => {});
-    }
+      if (isSubscribable(result)) {
+        return result;
+      }
 
-    return Observable.of(result).map(() => {});
+      if (isPromise(result)) {
+        return Observable.fromPromise(result);
+      }
+
+      return Observable.of(result);
+    }).map(() => {});
   };
 
   const run: Run = (destDir, done = () => {}) =>
