@@ -4,7 +4,7 @@ import { babelmonger } from "../src";
 
 const srcDir = resolve("fixtures");
 
-describe("babelmonger", () => {
+describe("babelmonger", function() {
   it("uses babelrc", function() {
     const monger = babelmonger(srcDir);
 

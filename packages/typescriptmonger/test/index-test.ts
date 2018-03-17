@@ -6,18 +6,19 @@ import * as rimraf from "rimraf";
 import * as glob from "glob";
 import { typescriptmonger } from "../src";
 
-describe("typescriptmonger", () => {
+describe("typescriptmonger", function() {
   let destDir: string;
 
-  beforeEach(() => {
+  beforeEach(function() {
     destDir = mkdtempSync(join(tmpdir(), "filemonger-"));
   });
 
-  afterEach(() => {
+  afterEach(function() {
     rimraf.sync(destDir);
   });
 
-  it("works", done => {
+  it("works", function(done) {
+    this.timeout(3000); // Ugh, tsc is slow af
     const srcDir = resolve("fixtures/src");
     const instance = typescriptmonger(srcDir, {
       entry: "index.ts",
