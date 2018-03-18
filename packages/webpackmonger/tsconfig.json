@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "strict": true,
+    "newLine": "LF",
+    "noUnusedLocals": true,
+    "declaration": true,
+    "noEmitOnError": true,
+    "outDir": "tmp"
+  },
+  "include": ["src/**/*", "test/**/*"]
+}
