@@ -25,7 +25,7 @@ export const babelmonger: Filemonger<TransformOptions> = make(
             files.push(
               writeFile(
                 f.fullPath(f.abs(join(destDir, `${file}.map`))),
-                (map as any).toBase64()
+                JSON.stringify(map as any)
               )
             );
           }
