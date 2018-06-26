@@ -1,41 +1,40 @@
 # Filemonger
 
-Filemonger is a generic, composable, code-over-config build pipeline tool for
-Node. Build your app, your library, or just process some files.
-
-A filemonger is a function which represents a transformation that may be applied
-to a directory. Using a very compact API, one may compose filemongers together
-to form compound filemongers, making it easy to concisely express both simple
-and complex build pipelines.
-
-Filemonger executes lazily, so once you've composed your pipeline you can kick
-it off at your leisure, or export it for usage elsewhere, or wrap your pipeline
-in a new filemonger and share it with others.
-
 * [Example](#example)
-* [Demo](#demo)
 * [Installation](#installation)
 * [API](#api)
 * [CLI](#cli)
 
 ## Example
 
-Here is a simplified version of a common thing we do:
+Here is a simple example using Filemonger to build some js with babel and
+webpack. We extend the abstract `Filemonger` class and use Filemonger's Rxjs
+operators to compile the source.
 
 ```js
-module.exports = merge(
-  babelmonger("src").bind(srcDir =>
-    webpackmonger(srcDir, { entry: "app/index.js" })
-  ),
-  sassmonger("src", { file: "styles/index.scss" })
-);
+// mongerfile.js
+
+// ... imports ...
+
+export default class Appmonger extends Filemonger {
+  srcDir = "src";
+  destDir = "dist";
+  sinks = [[".", pipe(babel(), webpack({ entry: "index.js" }))]];
+}
 ```
 
-If we were using webpack alone it might look like this:
+If we were using webpack alone it might look something like this:
 
 ```js
+// webpack.config.js
+
+// ... imports ...
+
 module.exports = {
-  entry: "./src/app/index",
+  entry: { main: ["./src/index.js"] },
+  output: {
+    path: path.resolve(__dirname, "dist")
+  },
   module: {
     rules: [
       {
@@ -43,25 +42,11 @@ module.exports = {
         use: {
           loader: "babel-loader"
         }
-      },
-      {
-        test: /\.scss$/,
-        use: {
-          loader: "sass-loader"
-        }
       }
     ]
   }
 };
 ```
-
-## Demo
-
-To see an end-to-end working example, see
-[this preact-todomvc fork](https://github.com/robbiepitts/preact-todomvc/tree/filemonger).
-Start by looking at the package.json `build` and `start` scripts, which run the
-`mongerfile.js`. This kicks off a build pipeline using filemongers in the
-`build` directory.
 
 ## Installation
 
@@ -71,137 +56,75 @@ yarn add [-D] @filemonger/main [@filemonger/cli]
 
 ## API
 
-### Making a filemonger
+Filemonger is an abstract class plus a collection of Rxjs operators. These
+operators can be used on their own or by classes extending the abstract
+`Filemonger` class.
 
-Read files from `srcDir`, transform them, and place the new files in the
-`destDir`, returning an `Observable`, `Promise`, or nothing (in case of a
-syncronous operation). If your filemonger returns an `Observable` or `Promise`,
-emissions will be awaited. `opts` is where options passed to your filemonger
-come in. If no options were passed then `opts` will be an empty object.
+### `Filemonger` abstract class
 
-```ts
-import { make } from "@filemonger/main";
+You must define the `srcDir`, `destDir`, and `sinks` properties when extending
+the `Filemonger` class. Classes extending `Filemonger` are used primarily as
+exports from your `mongerfile.js` which is used by `@filemonger/cli`.
 
-const foomonger = make((srcDir, destDir, opts) => {
-  // Do stuff
-});
-```
-
-### Invoking a filemonger
-
-Invoking a filemonger (i.e. instantiating it) gives us an interface which
-we can use to compose this instance with other filemonger instances.
-
-```ts
-filtermonger("src", { pattern: "**/*.js" });
-```
-
-### Composing filemongers
-
-#### `#bind()`
-
-Binds one filemonger to another, linking them together into a pipeline.
-
-```ts
-firstmonger().bind(srcDir => secondmonger(srcDir));
-// or simply
-firstmonger().bind(secondmonger);
-```
-
-The output directory gets piped into `secondmonger` when the pipeline is run.
-After `bind`ing we are left with a new filemonger instance that can be
-further composed.
-
-#### `merge()`
-
-Merges one filemonger instance with another, creating a new filemonger. Useful
-for funneling multiple sources into the same pipeline.
-
-```ts
-import { merge } from "@filemonger/main";
-
-merge(firstmonger(), secondmonger()).bind(thirdmonger);
-```
-
-### Running filemongers
-
-There are two ways to run a filemonger pipeline, the `#run()` and `#writeTo()`
-methods. `#run()` does not expose the stream and allows for a callback to
-be provided which is called upon completion or error. This is the recommended
-API for general filemonger usage. `#writeTo()` is a lower-level API to be used
-in the creation of filemongers and returns an Rxjs `Observable`.
-
-#### `#run()`
-
-```ts
-firstmonger("src").run("dist", err => {
-  if (err) throw err;
-  console.log("Donezo");
-});
-```
-
-#### `#writeTo()`
-
-```ts
-import { make } from "@filemonger/main";
-
-const timemonger = make((srcDir, destDir, opts) => {
-  console.time(opts.descriptor);
-
-  return opts
-    .monger(srcDir, opts.options)
-    .writeTo(destDir)
-    .do(() => console.timeEnd(opts.descriptor));
-});
-```
-
-### Authoring and sharing compound filemongers
-
-If you've made a filemonger pipeline you want to share with others, you want
-to wrap it in a new filemonger.
-
-You can see with this example that this moderately complex pipeline is concisely
-expressed (and could be expressed other ways). To see a complete example see the
-demo mentioned above.
-
-First make a package that exports a filemonger:
-
-```ts
-const { make } = require("@filemonger/main");
-// etc.
-
-const appmonger = make((srcDir, destDir) =>
-  merge(
-    filtermonger(srcDir, { pattern: "index.html" }),
-    babelmonger(srcDir).bind(srcDir =>
-      webpackmonger(srcDir, { entry: "app/index.js" })
-    ),
-    sassmonger(srcDir, { file: "styles/index.scss" })
-  ).writeTo(destDir)
-);
-
-module.exports = appmonger;
-```
-
-Which could then be consumed in a `mongerfile.js`:
+The below example will grab files from the `src` directory, send them through
+the babel/webpack pipeline (which is an Rxjs operator), and place the results in
+the `dest` directory.
 
 ```js
-const appmonger = require("some-cool-package");
-
-module.exports = appmonger("src");
+class Appmonger extends Filemonger {
+  srcDir = "src";
+  destDir = "dist";
+  sinks = [[".", pipe(babel(), webpack({ entry: "index.js" }))]];
+}
 ```
 
-And then with the CLI:
+#### `srcDir`
 
-```sh
-fm -d dist
-```
+The directory to look in for source files. Can be absolute or relative. Relative
+paths are resolved from the process's current working directory.
+
+#### `destDir`
+
+The directory to ultimately save all files to. This is where the `sinks` get
+placed.
+
+#### `sinks`
+
+An array of tuples of the form `[destPath, operator]`, where `destPath` is the
+path relative to `destDir` to place the results of `operator` applied to
+`srcDir`.
+
+### Operators
+
+\# TODO
+
+#### `find`
+
+#### `funnel`
+
+#### `memoize`
+
+#### `persist`
+
+#### `pick`
+
+#### `read`
+
+#### `babel`
+
+#### `sass`
+
+#### `typescript`
+
+#### `webpack`
 
 ## CLI
 
 Filemonger comes with a barebones CLI to simplify usage:
 
 1. Run `yarn add -D @filemonger/cli`
-2. Add a `mongerfile.js` to the root of your project
-3. Export a filemonger instance from your `mongerfile.js` (see example above)
-4. Run `fm -d path/to/dest/dir`
+2. Add a `mongerfile.js` to the root of your project (where your `package.json`
+   is)
+3. Export default and/or named filemongers from your `mongerfile.js`
+4. Add `scripts` to your `package.json` that run `fm` to run the default export
+   or `fm -n Foo` to run the export named `Foo`

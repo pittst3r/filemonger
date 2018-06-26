@@ -1,82 +1,52 @@
+import { fixturesPath } from "./test-support";
+import { identity } from "rxjs";
+import { map } from "rxjs/operators";
+import { Filemonger, Sinks } from "../src";
+import { funnel } from "../src/operators";
+import { inspectOutput } from "@filemonger/test-helpers";
 import { assert } from "chai";
-import * as rimraf from "rimraf";
-import { Directory, AbsolutePath } from "@filemonger/types";
-import { filtermonger } from "@filemonger/filtermonger";
-import { merge } from "../src";
-import { fixturesPath, createTmpDirSync } from "./test-support";
-import * as glob from "glob";
+import { relative } from "path";
 
-describe("filemonger", () => {
-  let destDir: Directory<AbsolutePath>;
+const expectedOutput = [
+  {
+    content:
+      'import { Foo } from "./types";\n\nexport default function foo(): Foo {\n  return "foo";\n}\n',
+    file: "stuff/typescript/foo.ts"
+  },
+  {
+    content: 'export type Foo = "foo";\n',
+    file: "stuff/typescript/types.d.ts"
+  },
+  {
+    content: "baz",
+    file: "stuff/text/foo.txt"
+  },
+  {
+    content: "bar",
+    file: "stuff/text/bar.txt"
+  }
+];
 
-  beforeEach(() => {
-    destDir = createTmpDirSync();
-  });
+describe("Filemonger", () => {
+  it("works", async () => {
+    class Foomonger extends Filemonger {
+      srcDir = fixturesPath();
+      destDir = "tmp/filemonger/first";
+      sinks: Sinks = [["stuff", funnel(map(identity))]];
+    }
 
-  afterEach(() => {
-    rimraf.sync(destDir);
-  });
+    const monger = new Foomonger();
 
-  describe("merge()", () => {
-    it("merges one monger with another creating a new monger", done => {
-      const srcDir = fixturesPath();
+    const firstOutput = monger.stream.toPromise();
 
-      merge(
-        filtermonger(srcDir, { pattern: "**/bar.txt" }),
-        filtermonger(srcDir, { pattern: "**/types.d.ts" })
-      ).run(destDir, err => {
-        if (err) throw err;
+    assert.equal(relative(monger.rootDir, await firstOutput), monger.destDir);
+    await inspectOutput(firstOutput, expectedOutput);
 
-        assert.sameMembers(glob.sync("**/*.*", { cwd: destDir }), [
-          "text/bar.txt",
-          "typescript/types.d.ts"
-        ]);
+    monger.destDir = "tmp/filemonger/second";
 
-        done();
-      });
-    });
-  });
+    const secondOutput = monger.stream.toPromise();
 
-  describe("IFilemonger", () => {
-    describe("#run()", () => {
-      it("runs the monger's transformation", done => {
-        const srcDir = fixturesPath();
-
-        filtermonger(srcDir).run(destDir, err => {
-          if (err) throw err;
-
-          assert.sameMembers(glob.sync("**/*", { cwd: destDir }), [
-            "text",
-            "text/bar.txt",
-            "text/baz.txt",
-            "typescript",
-            "typescript/types.d.ts",
-            "typescript/foo.ts"
-          ]);
-
-          done();
-        });
-      });
-    });
-
-    describe("#bind()", () => {
-      it("streams the result into the given function which returns a new filemonger instance", done => {
-        const srcDir = fixturesPath();
-
-        filtermonger(srcDir)
-          .bind(srcDir => filtermonger(srcDir, { pattern: "text/*" }))
-          .run(destDir, err => {
-            if (err) throw err;
-
-            assert.sameMembers(glob.sync("**/*", { cwd: destDir }), [
-              "text",
-              "text/bar.txt",
-              "text/baz.txt"
-            ]);
-
-            done();
-          });
-      });
-    });
+    assert.equal(relative(monger.rootDir, await secondOutput), monger.destDir);
+    await inspectOutput(secondOutput, expectedOutput);
   });
 });

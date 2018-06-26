@@ -1,39 +1,28 @@
-import { IFilemonger } from "@filemonger/types";
-import { mkdtempSync } from "fs";
-import { join, resolve } from "path";
-import * as glob from "glob";
-import { readFileSync } from "fs";
 import { assert } from "chai";
-import * as rimraf from "rimraf";
-
-function makeTmpDir() {
-  return mkdtempSync(resolve("tmp", "filemonger-"));
-}
+import { of, from, ObservableInput } from "rxjs";
+import { map, mergeMap, toArray } from "rxjs/operators";
+import { find, read } from "@filemonger/main";
+import { join } from "path";
 
 export function inspectOutput(
-  monger: IFilemonger,
+  source: ObservableInput<string>,
   expected: { file: string; content: string }[]
 ): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const destDir = makeTmpDir();
-
-    monger.run(destDir, err => {
-      if (err) reject(err);
-
-      const actual = glob
-        .sync("**/*.*", {
-          cwd: destDir
-        })
-        .map(file => ({
-          file,
-          content: readFileSync(join(destDir, file)).toString()
-        }));
-
-      assert.sameDeepMembers(actual, expected);
-
-      rimraf.sync(destDir);
-
-      resolve();
-    });
-  });
+  return from(source)
+    .pipe(
+      mergeMap(path =>
+        of(path).pipe(
+          find({ nodir: true, follow: true }),
+          mergeMap(file =>
+            of(join(path, file)).pipe(
+              read(),
+              map(content => ({ content, file }))
+            )
+          ),
+          toArray()
+        )
+      ),
+      map(actual => assert.sameDeepMembers(actual, expected))
+    )
+    .toPromise();
 }

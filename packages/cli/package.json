@@ -12,6 +12,10 @@
     "access": "public"
   },
   "dependencies": {
+    "@filemonger/babel": "^0.5.3",
+    "@filemonger/main": "^0.5.3",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "rxjs": "^6.2.1",
     "yargs": "^11.0.0"
   }
 }

@@ -6,10 +6,7 @@
     "strict": true,
     "newLine": "LF",
     "noUnusedLocals": true,
-    "declaration": true,
     "noEmitOnError": true,
-    "outDir": "tmp",
-    "experimentalDecorators": true
-  },
-  "include": ["src/**/*", "test/**/*"]
+    "jsx": "react"
+  }
 }
