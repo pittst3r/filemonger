@@ -1,66 +1,49 @@
 import { resolve } from "path";
 import {
-  BindOperator,
-  Filemonger,
-  IDict,
-  Run,
-  Transform,
-  WriteTo,
-  IFilemonger,
-  Opaque
-} from "@filemonger/types";
-import * as helpers from "./helpers";
-import { Observable } from "rxjs";
+  OperatorFunction,
+  pipe,
+  forkJoin,
+  of,
+  Observable,
+  Subject
+} from "rxjs";
+import { symlink } from "./operators";
+import { delayWhen, mapTo, take } from "rxjs/operators";
 
-const { f, tmp } = helpers;
+export * from "./operators";
+export * from "./sources";
 
-export { helpers };
+export type Sinks = [string, OperatorFunction<string, string>][];
 
-const isSubscribable = (thing: any): thing is Observable<Opaque> =>
-  thing && thing.subscribe;
+export abstract class Filemonger {
+  rootDir = process.cwd();
 
-const isPromise = (thing: any): thing is Promise<Opaque> => thing && thing.then;
+  abstract srcDir: string;
+  abstract destDir: string;
+  abstract sinks: Sinks;
 
-export const make = <Opts extends IDict<any>>(
-  transform: Transform<Opts>
-): Filemonger<Opts> => (srcDir = "", opts = Object.create({})) => {
-  const writeTo: WriteTo = (destDir: string) => {
-    const resolvedSrcDir = f.dir(f.abs(resolve(srcDir)));
-    const resolvedDestDir = f.dir(f.abs(resolve(destDir)));
+  private _src = new Subject<string>();
 
-    return Observable.defer(() => {
-      const result = transform(resolvedSrcDir, resolvedDestDir, opts);
+  run(): Promise<string> {
+    const single = this._stream.pipe(take(1)).toPromise();
 
-      if (isSubscribable(result)) {
-        return result;
-      }
+    this._src.next(resolve(this.rootDir, this.srcDir));
 
-      if (isPromise(result)) {
-        return Observable.fromPromise(result);
-      }
+    return single;
+  }
 
-      return Observable.of(result);
-    }).map(() => {});
-  };
+  private get _stream(): Observable<string> {
+    return this._src.pipe(delayWhen(this._run), mapTo(this.destDir));
+  }
 
-  const run: Run = (destDir, done = () => {}) =>
-    writeTo(destDir).subscribe({ complete: done, error: done });
+  private get _run() {
+    return (srcDir: string) =>
+      forkJoin(this._ops.map(op => of(srcDir).pipe(op)));
+  }
 
-  const bind: BindOperator = factory =>
-    make((_, destDir) =>
-      tmp(tmpDir =>
-        writeTo(tmpDir).mergeMap(() => factory(tmpDir).writeTo(destDir))
-      )
-    )();
-
-  return {
-    bind,
-    writeTo,
-    run
-  };
-};
-
-export const merge = (...instances: IFilemonger[]): IFilemonger =>
-  make((_, destDir) =>
-    Observable.combineLatest(instances.map(m => m.writeTo(destDir)))
-  )();
+  private get _ops() {
+    return this.sinks.map(([path, op]) =>
+      pipe(op, symlink(resolve(this.rootDir, this.destDir, path)))
+    );
+  }
+}

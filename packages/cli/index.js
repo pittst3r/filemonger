@@ -4,32 +4,24 @@ const { join } = require("path");
 const { ensureDir } = require("fs-extra");
 const yargs = require("yargs");
 
-const argv = yargs
-  .option("dest", {
-    alias: "d",
-    describe: "Destination directory to place transformed files",
-    type: "string"
-  })
-  .demandOption(["dest"]).argv;
+const argv = yargs.option("name", {
+  alias: "n",
+  describe: "The name of the exported filemonger to use",
+  type: "string"
+}).argv;
 
-const destDir = argv.dest;
-
+const name = argv.name || "default";
 const mongerfile = require(join(process.cwd(), "mongerfile"));
+const monger = new mongerfile[name]();
 
-ensureDir(destDir, err => {
-  if (err) {
+console.time("Filemonger");
+
+monger
+  .run()
+  .catch(err => {
     console.error(err);
     process.exit(1);
-    return;
-  }
-
-  console.time("Filemonger");
-  mongerfile.run(destDir, err => {
+  })
+  .finally(() => {
     console.timeEnd("Filemonger");
-
-    if (err) {
-      console.error(err);
-      process.exit(1);
-    }
   });
-});
